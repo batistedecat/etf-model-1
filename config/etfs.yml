@@ -1,0 +1,90 @@
+algemeen:
+  positie: 1500
+  portefeuille: 15000
+  cash: 7500
+  horizon: 5
+  min_test: 750
+  min_train: 1000
+  frac_test: 0.30
+  centrum: nul
+etfs:
+  - ticker: QDVE.DE
+    naam: iShares S&P 500 Information Technology Sector
+    type: aandelen
+    sector: technologie
+    ter: 0.0015
+    top_positie: 0.211
+    waardering:
+      pe0: 22
+      dy: 0.006
+      scenarios:
+        bear: {g: 0.05, pe5: 17}
+        base: {g: 0.12, pe5: 20}
+        bull: {g: 0.18, pe5: 22}
+  - ticker: IUIT.L
+    naam: iShares S&P 500 Information Technology Sector (USD-notering)
+    type: aandelen
+    sector: technologie
+    ter: 0.0015
+    top_positie: 0.211
+    waardering:
+      pe0: 22
+      dy: 0.006
+      scenarios:
+        bear: {g: 0.05, pe5: 17}
+        base: {g: 0.12, pe5: 20}
+        bull: {g: 0.18, pe5: 22}
+  - ticker: IWDA.AS
+    naam: iShares Core MSCI World
+    type: aandelen
+    sector: gespreid
+    ter: 0.0020
+    top_positie: 0.05
+    waardering:
+      pe0: 18
+      dy: 0.016
+      scenarios:
+        bear: {g: 0.03, pe5: 14}
+        base: {g: 0.07, pe5: 17}
+        bull: {g: 0.10, pe5: 19}
+  - ticker: IEAG.AS
+    naam: iShares EUR Aggregate Bond ESG SRI
+    type: obligaties
+    sector: obligaties
+    ter: 0.0016
+    obligaties:
+      ytm: 0.0394
+      duration: 5.95
+      scenarios:
+        bear: {dy: 0.02}
+        base: {dy: 0.0}
+        bull: {dy: -0.01}
+  - ticker: SGLN.L
+    naam: iShares Physical Gold
+    type: overig
+    start: "2012-01-01"
+    sector: grondstoffen
+    ter: 0.0012
+    overig:
+      scenarios: {bear: -0.02, base: 0.03, bull: 0.07}
+  - ticker: VWCE.DE
+    naam: Vanguard FTSE All-World
+    type: aandelen
+    sector: gespreid
+    ter: 0.0019
+    top_positie: 0.05
+  - ticker: 4GLD.DE
+    naam: Xetra-Gold (controle voor SGLN.L)
+    type: overig
+    start: "2012-01-01"
+    sector: grondstoffen
+    ter: 0.0
+    overig:
+      scenarios: {bear: -0.02, base: 0.03, bull: 0.07}
+      
+
+
+
+      
+    
+    
