@@ -6,3 +6,5 @@ data/
 out/
 *.pdf
 *.tex
+*.html
+to-do.md

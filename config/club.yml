@@ -1,0 +1,48 @@
+algemeen:
+  positie: 1000
+  portefeuille: 12000
+  cash: 12000
+  horizon: 2
+  min_test: 750
+  min_train: 1000
+  frac_test: 0.30
+  centrum: nul
+etfs:
+  - ticker: QDVE.DE
+    naam: iShares S&P 500 Information Technology Sector
+    type: aandelen
+    sector: technologie
+    ter: 0.0015
+    top_positie: 0.211
+    waardering:
+      pe0: 22
+      dy: 0.006
+      scenarios:
+        bear: {g: 0.05, pe5: 19.8}
+        base: {g: 0.12, pe5: 21.2}
+        bull: {g: 0.18, pe5: 22}
+  - ticker: IWDA.AS
+    naam: iShares Core MSCI World
+    type: aandelen
+    sector: gespreid
+    ter: 0.0020
+    top_positie: 0.05
+    waardering:
+      pe0: 18
+      dy: 0.016
+      scenarios:
+        bear: {g: 0.03, pe5: 16.3}
+        base: {g: 0.07, pe5: 17.6}
+        bull: {g: 0.10, pe5: 18.4}
+  - ticker: IEAG.AS
+    naam: iShares EUR Aggregate Bond ESG SRI
+    type: obligaties
+    sector: obligaties
+    ter: 0.0016
+    obligaties:
+      ytm: 0.0394
+      duration: 5.95
+      scenarios:
+        bear: {dy: 0.02}
+        base: {dy: 0.0}
+        bull: {dy: -0.01}
