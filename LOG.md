@@ -11,7 +11,7 @@
 | Functie            | Bestand    | Doet                                               | Geeft terug                 |
 |:-------------------|:-----------|:---------------------------------------------------|:----------------------------|
 | `lees_config(pad)` | `R/data.R` | leest een config, vult elke ETF aan met `algemeen` | lijst met één `cfg` per ETF |
-
+| `load_etf(ticker, from)` | `R/data.R` | haalt koersen, zet om naar euro, doet datachecks   | lijst met `px`, `r`, `koers`, `checks`, … |
 
 # Configuratie
 
