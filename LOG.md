@@ -21,8 +21,8 @@ Config = invoer, `R/*.R` = machine. Andere ETF of aanname? Alleen de config aanp
 
 | Bestand    | Doel                                | Aanpassen? |
 |:-----------|:------------------------------------|:-----------|
-| `etfs.yml` | gewoon een testdatabank vo mezelf | nooit      |
-| `club.yml` | analyse voor de club          | ja         |
+| `etfs.yml` | gewoon een testdatabank vo mezelf   | nooit      |
+| `club.yml` | analyse voor de club                | ja         |
 
 | Soort      | Velden                                                            | Aanpassen wanneer                |
 |:-----------|:------------------------------------------------------------------|:---------------------------------|
