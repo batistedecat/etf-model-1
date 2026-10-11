@@ -65,7 +65,7 @@ flowchart LR
   S --> Y --> LC --> RE
   RE --> LE
   LE -->|px| HI
-  YH --> RE
+  YH --> LE
   RE --> VR -->|scenario's| MC
   HI -->|vol| MC
   LE -->|r| AS --> FT
