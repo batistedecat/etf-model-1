@@ -3,7 +3,7 @@
 | Dag | Datum      | Gedaan                              |
 |:----|:-----------|:------------------------------------|
 | 1   | 10/10/2026 | repo, renv, config, `lees_config()` |
-| 2   | 11/10/2026 | `club.yml`                          |
+| 2   | 11/10/2026 | `club.yml`, `load_etf()`, mermaid diagram  |
 
 
 # Functies
