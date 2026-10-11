@@ -59,9 +59,13 @@ flowchart LR
   subgraph D["4 · Rapport"]
     RP["rapport.Rmd → PDF"]
   end
+  subgraph E["5 · Databron"]
+    YH["Yahoo Finance"]
+  end
   S --> Y --> LC --> RE
   RE --> LE
   LE -->|px| HI
+  YH --> RE
   RE --> VR -->|scenario's| MC
   HI -->|vol| MC
   LE -->|r| AS --> FT
