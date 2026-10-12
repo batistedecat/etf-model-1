@@ -46,3 +46,5 @@ flowchart LR
   classDef klaar fill:#1BAF7A,color:#fff,stroke:#0d6b4a
     class LC,LE,YH,Y,S,HI klaar
 ```
+
+* green = finished
