@@ -1,18 +1,21 @@
 # Wat wanneer gedaan
 
-| Dag | Datum      | Gedaan                              |
-|:----|:-----------|:------------------------------------|
-| 1   | 10/10/2026 | repo, renv, config, `lees_config()` |
-| 2   | 11/10/2026 | `club.yml`, `load_etf()`, mermaid diagram  |
-
+| Dag | Datum      | Gedaan                                                |
+|:----|:-----------|:------------------------------------------------------|
+| 1   | 10/10/2026 | repo, renv, config, `lees_config()`                   |
+| 2   | 11/10/2026 | `club.yml`, `load_etf()`, mermaid diagram             |
+| 3   | 12/10/2026 | `historiek()`, `drawdowns()`, twee plots, drempel 15% |
 
 # Functies
 
-| Functie            | Bestand    | Doet                                               | Geeft terug                 |
-|:-------------------|:-----------|:---------------------------------------------------|:----------------------------|
-| `lees_config(pad)` | `R/data.R` | leest een config, vult elke ETF aan met `algemeen` | lijst met één `cfg` per ETF |
-| `load_etf(ticker, from)` | `R/data.R` | haalt koersen, zet om naar euro, doet datachecks   | lijst met `px`, `r`, `koers`, `checks`, … |
-
+| Functie                      | Bestand          | Doet                                               | Geeft terug                                       |
+|:-----------------------------|:-----------------|:---------------------------------------------------|:--------------------------------------------------|
+| `lees_config(pad)`           | `R/data.R`       | leest een config, vult elke ETF aan met `algemeen` | lijst met één `cfg` per ETF                       |
+| `load_etf(ticker, from)`     | `R/data.R`       | haalt koersen, zet om naar euro, doet datachecks   | lijst met `px`, `r`, `koers`, `checks`, …         |
+| `drawdowns(px, drempel)`     | `R/historiek.R`  | zoekt dalingen ≥ drempel: top, bodem, herstel      | `data.frame`, één rij per episode                 |
+| `historiek(px)`              | `R/historiek.R`  | CAGR, volatiliteit, max drawdown, kalenderjaren    | lijst met `cagr`, `vol`, `maxdd`, `kalender`, … |
+| `plot_koers(px)`             | `R/historiek.R`  | koers en dagrendement in twee panelen (xts)        | xts-plot                                          |
+| `plot_drawdown(px, drempel)` | `R/historiek.R`  | drawdown in % met drempellijn (ggplot)             | ggplot                                            |
 # Configuratie
 
 Config = invoer, `R/*.R` = machine. Andere ETF of aanname? Alleen de config aanpassen.
