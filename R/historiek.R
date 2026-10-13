@@ -1,3 +1,5 @@
+#achteruit kijken: antwoord op : wat is er al gebeurd????
+
 drawdowns <- function(px, drempel = 0.15) {
   x <- as.numeric(px)
   d <- index(px)

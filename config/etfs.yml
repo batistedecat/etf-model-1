@@ -18,9 +18,9 @@ etfs:
       pe0: 22
       dy: 0.006
       scenarios:
-        bear: {g: 0.05, pe5: 17}
-        base: {g: 0.12, pe5: 20}
-        bull: {g: 0.18, pe5: 22}
+        bear: {g: 0.05, peH: 17}
+        base: {g: 0.12, peH: 20}
+        bull: {g: 0.18, peH: 22}
   - ticker: IUIT.L
     naam: iShares S&P 500 Information Technology Sector (USD-notering)
     type: aandelen
@@ -31,9 +31,9 @@ etfs:
       pe0: 22
       dy: 0.006
       scenarios:
-        bear: {g: 0.05, pe5: 17}
-        base: {g: 0.12, pe5: 20}
-        bull: {g: 0.18, pe5: 22}
+        bear: {g: 0.05, peH: 17}
+        base: {g: 0.12, peH: 20}
+        bull: {g: 0.18, peH: 22}
   - ticker: IWDA.AS
     naam: iShares Core MSCI World
     type: aandelen
@@ -44,9 +44,9 @@ etfs:
       pe0: 18
       dy: 0.016
       scenarios:
-        bear: {g: 0.03, pe5: 14}
-        base: {g: 0.07, pe5: 17}
-        bull: {g: 0.10, pe5: 19}
+        bear: {g: 0.03, peH: 14}
+        base: {g: 0.07, peH: 17}
+        bull: {g: 0.10, peH: 19}
   - ticker: IEAG.AS
     naam: iShares EUR Aggregate Bond ESG SRI
     type: obligaties
