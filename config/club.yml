@@ -7,6 +7,7 @@ algemeen:
   min_train: 1000
   frac_test: 0.30
   centrum: nul
+  stappen: 52
 etfs:
   - ticker: QDVE.DE
     naam: iShares S&P 500 Information Technology Sector

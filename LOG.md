@@ -6,6 +6,7 @@
 | 2   | 11/10/2026 | `club.yml`, `load_etf()`, mermaid diagram             |
 | 3   | 12/10/2026 | `historiek()`, `drawdowns()`, twee plots, drempel 15% |
 | 4   | 13/10/2026 | `verwacht_rendement()`, `breakeven_groei()`, `pe5` → `peH` |
+| 5   | 14/10/2026 | Monte Carlo: GBM, football field, paden-plot          |
 
 # Functies
 
@@ -19,6 +20,10 @@
 | `plot_drawdown(px, drempel)` | `R/historiek.R`  | drawdown in % met drempellijn (ggplot)             | ggplot                                            |
 | `verwacht_rendement(cfg)`    | `R/rendement.R`  | verwacht rendement per scenario, formule per type  | benoemde vector `bear`, `base`, `bull` (of NULL)  |
 | `breakeven_groei(cfg, doel)` | `R/rendement.R`  | winstgroei nodig voor `doel`; standaard base-`peH` | getal, bv. 0.096 = 9,6%                           |
+| `simulate_gbm()`             | `R/montecarlo.R` | koerspaden met GBM                                 | matrix paden × weken                              |
+| `mc_etf(rs, sigma, positie)` | `R/montecarlo.R` | samenvatting per scenario                          | `p10`, `p50`, `p90`, `verlies`, `gem`             |
+| `plot_football(mc, positie)` | `R/montecarlo.R` | P10–P90 per scenario                               | ggplot                                            |
+| `plot_paden()`               | `R/montecarlo.R` | paden + band, 3 scenario's                         | ggplot                                            |
 
 # Configuratie
 
@@ -39,3 +44,4 @@ Config = invoer, `R/*.R` = machine. Andere ETF of aanname? Alleen de config aanp
 | aannames   | `pe0`, `dy`, `ytm`, `duration`, scenario's                        | vóór elke pitch                  |
 
 `peH` = forward P/E op het einde van de horizon (`horizon` jaar, club: 2), per scenario. Vroeger `pe5`.
+`stappen` = simulatiestappen per jaar (52 = week).
