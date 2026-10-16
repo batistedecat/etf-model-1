@@ -35,3 +35,12 @@ tab <- do.call(rbind, lapply(res, rij))
 dir.create("out", showWarnings = FALSE)
 write.csv(tab, "out/vergelijking.csv", row.names = FALSE)
 print(tab, row.names = FALSE)
+
+
+# per ETF een PDF in out/
+for (t in names(res)) {
+  e <- new.env()
+  e$res <- res[[t]]   # resultaat meegeven, niet opnieuw rekenen
+  rmarkdown::render("rapport.Rmd", params = list(ticker = t, config = config), envir = e, quiet = TRUE,
+                    output_file = paste0(gsub("[^A-Za-z0-9]", "_", t), ".pdf"), output_dir = "out")
+}
