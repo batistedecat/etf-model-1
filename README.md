@@ -44,7 +44,7 @@ flowchart LR
   RE --> LM
   RE --> RP
   classDef klaar fill:#1BAF7A,color:#fff,stroke:#0d6b4a
-    class LC,LE,YH,Y,S,HI,VR,AS,FT klaar
-```
+    class LC,LE,YH,Y,S,HI,VR,AS,FT,MC klaar
+
 
 * green = finished
