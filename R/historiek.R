@@ -44,7 +44,7 @@ drawdowns <- function(px, drempel = 0.15) {
   if (length(out)) do.call(rbind, out) else data.frame()
 }
 
-historiek <- function(px) {
+historiek <- function(px, drempel = 0.15) {
   
   # koersen als getallen, lengte vd reeks in jaren
   x <- as.numeric(px)
@@ -66,7 +66,7 @@ historiek <- function(px) {
     vol = sd(as.numeric(r)) * sqrt(252),            # dagvolatiliteit naar jaarbasis, 252 beursdagen
     maxdd = min(x / cummax(x) - 1),                 # grootste daling ooit (negatief)
     kalender = kalender,                            # rendement per kalenderjaar, eerste jaar NA
-    episodes = drawdowns(px)                        # tabel met alle dalingen van minstens 15%
+    episodes = drawdowns(px, drempel)             # tabel met alle dalingen van minstens 15% of gegeven drempel
   )
 }
 

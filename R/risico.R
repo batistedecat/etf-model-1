@@ -67,3 +67,65 @@ risk_3ways <- function(L, alpha, ft, centrum = "nul") {
   colnames(out) <- c("VaR", "ES")
   out
 }
+
+kupiec_test <- function(x, n, alpha) {
+  
+  # verwacht tegen gezien
+  p0 <- 1 - alpha
+  ph <- x / n
+  
+  # LR-test, 1 vrijheidsgraad
+  LR <- if (x == 0) -2 * n * log(1 - p0) else
+    -2 * ((n - x) * log(1 - p0) + x * log(p0)) + 2 * ((n - x) * log(1 - ph) + x * log(ph))
+  c(x = x, verwacht = n * p0, LR = LR, p = 1 - pchisq(LR, 1))
+}
+
+indep_test <- function(v) {
+  
+  # overgangen gisteren -> vandaag
+  tab <- table(vorige = factor(v[-length(v)], 0:1), nu = factor(v[-1], 0:1))
+  
+  # kans op overschrijding na overschrijding vs na rust
+  c(p_vv = tab["1", "1"] / max(1, sum(tab["1", ])),
+    p_v_rust = tab["0", "1"] / sum(tab["0", ]),
+    p = suppressWarnings(chisq.test(tab, correct = FALSE)$p.value))
+}
+
+backtest <- function(L_train, L_test, ft, centrum = "nul") {
+  
+  # per alpha, per model: dus 6 totaal
+  do.call(rbind, lapply(c(0.95, 0.99), function(a) {
+    R3 <- risk_3ways(L_train, a, ft, centrum)
+    do.call(rbind, lapply(rownames(R3), function(model) {
+      
+      # 1 = overschrijding
+      v <- as.integer(L_test > R3[model, "VaR"])
+      k <- kupiec_test(sum(v), length(v), a)
+      id <- indep_test(v)
+      
+      # aantal, clusters, grootte
+      data.frame(alpha = a, model = model, x = k[["x"]], verwacht = k[["verwacht"]],
+                 p_kupiec = k[["p"]], p_indep = id[["p"]],
+                 es_ratio = if (sum(v) > 0) mean(L_test[v == 1]) / R3[model, "ES"] else NA)
+    }))
+  }))
+}
+
+var_es <- function(pnl, alpha = 0.95) {
+  
+  # verliezen, grootste eerst
+  k <- ceiling(length(pnl) * (1 - alpha))
+  v <- sort(-pnl, decreasing = TRUE)
+  c(VaR = v[k], ES = mean(v[1:k]))
+}
+
+horizon_risk <- function(positie, s, nu, jaren, n = 10000) {
+  
+  # aantal dagen, dag-sd van de t
+  k <- round(252 * jaren)
+  sd_dag <- s * sqrt(nu / (nu - 2))
+  
+  # t-schokken, opgeteld per pad, zonder drift
+  Z <- matrix(s * rt(n * k, df = nu), nrow = n)
+  positie * (exp(rowSums(Z) - k * sd_dag^2 / 2) - 1)
+}
