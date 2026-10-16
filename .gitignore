@@ -9,3 +9,4 @@ out/
 *.html
 to-do.md
 .DS_Store
+example.R
