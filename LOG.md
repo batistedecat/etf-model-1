@@ -7,6 +7,7 @@
 | 3   | 12/10/2026 | `historiek()`, `drawdowns()`, twee plots, drempel 15% |
 | 4   | 13/10/2026 | `verwacht_rendement()`, `breakeven_groei()`, `pe5` → `peH` |
 | 5   | 14/10/2026 | Monte Carlo: GBM, football field, paden-plot          |
+| 6   | 16/10/2026 | risicomodel: split, Student-t, VaR/ES op 3 manieren   |
 
 # Functies
 
@@ -24,6 +25,10 @@
 | `mc_etf(rs, sigma, positie)` | `R/montecarlo.R` | samenvatting per scenario                          | `p10`, `p50`, `p90`, `verlies`, `gem`             |
 | `plot_football(mc, positie)` | `R/montecarlo.R` | P10–P90 per scenario                               | ggplot                                            |
 | `plot_paden()`               | `R/montecarlo.R` | paden + band, 3 scenario's                         | ggplot                                            |
+| `auto_split(r)`              | `R/risico.R`     | kiest training/test: laatste geschikte 1 januari   | lijst `ok`, `start_test`, `train`, `test`         |
+| `normaliteit(r)`             | `R/risico.R`     | scheefheid, kurtosis, Jarque-Bera dag/week/maand   | benoemde vector                                   |
+| `fit_t(L)`                   | `R/risico.R`     | Student-t op 100·L, AIC t vs normaal               | `m`, `s`, `df`, `aic_t`, `aic_n`                  |
+| `risk_3ways(L, alpha, ft)`   | `R/risico.R`     | VaR en ES: empirisch, normaal, Student-t           | tabel 3 × 2 (per €1), verm. met positie om VaR en ES te weten|
 
 # Configuratie
 
@@ -45,3 +50,13 @@ Config = invoer, `R/*.R` = machine. Andere ETF of aanname? Alleen de config aanp
 
 `peH` = forward P/E op het einde van de horizon (`horizon` jaar, club: 2), per scenario. Vroeger `pe5`.
 `stappen` = simulatiestappen per jaar (52 = week).
+
+`centrum: nul` = VaR/ES rond 0, niet rond het gemiddelde dagrendement.
+Waarom: op één dag is het gemiddelde klein tegenover de spreiding (RiskMetrics), en de training was uitzonderlijk sterk (+0,14%/dag).
+
+# Bevindingen QDVE.DE (training 2015–2022, per €1.000)
+
+- Niet normaal: scheefheid −0,47, kurtosis 6,75, Jarque-Bera verwerpt dag en week (maand p = 0,39).
+- Student-t past veel beter: ν = 3,47, AIC 239 lager dan normaal.
+- 95%: VaR ≈ €21–24, ES ≈ €33; de modellen zijn het eens.
+- 99%: VaR t €38,7, ES t €56,3; normaal geeft €32 / €37 en onderschat de staart met een derde.
