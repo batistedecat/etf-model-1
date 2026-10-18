@@ -51,7 +51,7 @@ Never used R? YouTube "install R and RStudio" and you're good.
    - one PDF per ETF, like `QDVE_DE.pdf`
    - `vergelijking.csv`, with all ETFs side by side
 
-Done. You just ran a risk model. 🎉
+Done. You just ran a risk model.
 
 ## Add your own ETF
 
@@ -89,7 +89,7 @@ In a hurry? [justETF](https://www.justetf.com) shows the cost, size and top hold
 
 Every ETF gets three scenarios: bear (things go badly), base (your best guess) and bull (things go well).
 
-⚠️ Changing `horizon`? Then change `peH` too. It's the P/E at the *end* of the horizon, so it depends on it.
+**Heads up:** changing `horizon`? Then change `peH` too. It's the P/E at the *end* of the horizon, so it depends on it.
 
 ## Next pitch? The routine
 
@@ -109,7 +109,7 @@ Back for a new ETF a few months later? Do this:
 7. **Read the PDFs.** An assumption looks off? Tweak it and run again.
 8. **Share the PDFs** from `out/` with the board before the vote.
 
-That's it. Pitch ready. 🎯
+That's it. Pitch ready.
 
 ## What the engine does (and why)
 
