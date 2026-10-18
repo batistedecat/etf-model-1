@@ -80,6 +80,11 @@ our cash (`cash`) and how many years we look ahead (`horizon`).
 | `ytm`, `duration` | yield and duration (bond funds only) | the factsheet |
 | `conclusie` | your verdict, shown at the end of the report | you! |
 
+**Where's the factsheet?** On the website of the company behind the fund: iShares, Vanguard, Xtrackers, Amundi…
+Search the fund name or its ISIN there and open the fund page.
+You'll find the factsheet (a short PDF) under "Documents", and the full list of holdings in its own tab.
+In a hurry? [justETF](https://www.justetf.com) shows the cost, size and top holdings of most ETFs on one page.
+
 Every ETF gets three scenarios: bear (things go badly), base (your best guess) and bull (things go well).
 
 ⚠️ Changing `horizon`? Then change `peH` too. It's the P/E at the *end* of the horizon, so it depends on it.
