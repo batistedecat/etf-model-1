@@ -2,7 +2,7 @@ algemeen:
   positie: 1000
   portefeuille: 12000
   cash: 12000
-  horizon: 2
+  horizon: 1
   min_test: 750
   min_train: 1000
   frac_test: 0.30
@@ -20,8 +20,8 @@ etfs:
       pe0: 22
       dy: 0.006
       scenarios:
-        bear: {g: 0.05, peH: 19.8}
-        base: {g: 0.12, peH: 21.2}
+        bear: {g: 0.05, peH: 20.9}
+        base: {g: 0.12, peH: 21.6}
         bull: {g: 0.18, peH: 22}
   - ticker: IWDA.AS
     naam: iShares Core MSCI World
@@ -33,9 +33,9 @@ etfs:
       pe0: 18
       dy: 0.016
       scenarios:
-        bear: {g: 0.03, peH: 16.3}
-        base: {g: 0.07, peH: 17.6}
-        bull: {g: 0.10, peH: 18.4}
+        bear: {g: 0.03, peH: 17.1}
+        base: {g: 0.07, peH: 17.8}
+        bull: {g: 0.10, peH: 18.2}
   - ticker: IEAG.AS
     drempel: 0.05
     naam: iShares EUR Aggregate Bond ESG SRI
