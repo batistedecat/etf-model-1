@@ -8,7 +8,7 @@
 |16 oct 2026| Claude Opus 5.5 | help with Log-documentations |
 |16 oct 2026| Claude Opus 5.5 | data-frame syntax in `run_all.R`en `R/data.R`|
 |16 oct 2026| Claude Opus 5.5 | generated `tests/testthat/test-model.R`|
-|17 oct 2026| Claude Opus 5.5 | `data.frame` and `ggplot2` syntax |
+|17 oct 2026| Claude Opus 5.5 | generated `rij()` in `run_all.R` (summary `data.frame`), `ggplot2` syntax |
 |18 oct 2026| Claude Opus 5.5 | repo audit: `renv.lock`, cache, limits logic |
 |18 oct 2026| Claude Opus 5.5 | MC convergence check (10k vs 100k paths) |
 |18 oct 2026| Claude Opus 5.5 | `rapport.Rmd` rewrite: inline R, `asis` tables, captions |
