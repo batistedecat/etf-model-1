@@ -36,6 +36,32 @@ etfs:
         bear: {g: 0.03, peH: 17.1}
         base: {g: 0.07, peH: 17.8}
         bull: {g: 0.10, peH: 18.2}
+  - ticker: SXR8.DE
+    naam: iShares Core S&P 500
+    type: aandelen
+    sector: gespreid
+    ter: 0.0007
+    top_positie: 0.084
+    waardering:
+      pe0: 19        # forward P/E, FactSet 16/10/2026
+      dy: 0.010      # dividendrendement S&P 500, aug 2026
+      scenarios:     # g = eigen aanname, nog nakijken
+        bear: {g: 0.04, peH: 18.1}
+        base: {g: 0.09, peH: 18.7}
+        bull: {g: 0.13, peH: 19}
+  - ticker: SXRV.DE
+    naam: iShares Nasdaq 100
+    type: aandelen
+    sector: technologie
+    ter: 0.0030
+    top_positie: 0.084
+    waardering:
+      pe0: 26.9      # trailing P/E (worldperatio, 16/10/2026), forward niet gevonden
+      dy: 0.004      # dividendrendement QQQ
+      scenarios:     # g = eigen aanname, nog nakijken
+        bear: {g: 0.05, peH: 25.6}
+        base: {g: 0.11, peH: 26.5}
+        bull: {g: 0.16, peH: 26.9}
   - ticker: IEAG.AS
     drempel: 0.05
     naam: iShares EUR Aggregate Bond ESG SRI
