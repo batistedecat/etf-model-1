@@ -24,6 +24,9 @@ And we get to spend our time on the fun part: the discussion before the vote.
 
 You need [R](https://cran.r-project.org) (version 4.4 or newer) and [RStudio](https://posit.co/download/rstudio-desktop/). That's it.
 
+Never used R? YouTube "install R and RStudio" and you're good.
+(R is goated for these kind of projects)
+
 1. **Get the code.** In a terminal:
    ```bash
    git clone https://github.com/batistedecat/etf-model-1.git
@@ -59,7 +62,7 @@ You never have to touch the R code.
 2. Fill in the fields (see the table).
 3. Run `source("run_all.R")` again.
 
-The field names are Dutch. Sorry, not sorry.
+The field names are Dutch. Sorry haha.
 
 The top part (`algemeen`) holds the settings for every ETF:
 how much we invest (`positie`), the size of the portfolio (`portefeuille`),
