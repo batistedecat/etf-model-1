@@ -25,7 +25,8 @@ And we get to spend our time on the fun part: the discussion before the vote.
 You need [R](https://cran.r-project.org) (version 4.4 or newer) and [RStudio](https://posit.co/download/rstudio-desktop/). That's it.
 
 Never used R? YouTube "install R and RStudio" and you're good.
-(R is goated for these kind of projects)
+(R is goated for this kind of project.)
+Total newbie? [SETUP.md](SETUP.md) walks you through every click, for Mac and Windows.
 
 1. **Get the code.** In a terminal:
    ```bash
@@ -36,12 +37,13 @@ Never used R? YouTube "install R and RStudio" and you're good.
    ```r
    renv::restore()
    ```
+   It asks if you want to proceed. Type `Y` and press Enter.
    This installs the exact versions we use. The first time takes a few minutes. Grab a coffee.
 4. **Install LaTeX.** You need it for the PDFs. Only once:
    ```r
    tinytex::install_tinytex()
    ```
-   Already have LaTeX? Skip this.
+   Then restart RStudio. Already have LaTeX? Skip this.
 5. **Hit run.**
    ```r
    source("run_all.R")
@@ -224,6 +226,7 @@ It helps us think. It doesn't think for us.
 | `rapport.Rmd` | the report template |
 | `run_all.R` | the start button |
 | `tests/` | checks that the math still works |
+| `SETUP.md` | step-by-step install guide for newbies |
 
 This repo is read-only: you can use it, but you can't push to it. Your changes stay on your own laptop.
 Found a bug or got an idea? Tell me.
