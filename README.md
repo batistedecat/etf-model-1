@@ -224,7 +224,6 @@ It helps us think. It doesn't think for us.
 | `rapport.Rmd` | the report template |
 | `run_all.R` | the start button |
 | `tests/` | checks that the math still works |
-| `LOG.md` | what got built when |
 
 This repo is read-only: you can use it, but you can't push to it. Your changes stay on your own laptop.
 Found a bug or got an idea? Tell me.
