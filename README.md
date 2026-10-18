@@ -1,7 +1,7 @@
 # ETF engine
 
 Feed it an ETF. Get back a full risk report as a PDF.
-Built in R for Le Gradient, the student investment club in Ghent.
+Built in R for [Le Gradient](https://legradient.be), the student investment club in Ghent.
 
 ## Why we made this
 
@@ -230,4 +230,4 @@ Error about `testthat`? Run `renv::install("testthat")` first.
 This repo is read-only: you can use it, but you can't push to it. Your changes stay on your own laptop.
 Found a bug or got an idea? Tell me.
 
-Made by Batiste for Le Gradient. Questions? Catch me at the next meeting.
+Made by Batiste for [Le Gradient](https://legradient.be). Questions? Catch me at the next meeting.
