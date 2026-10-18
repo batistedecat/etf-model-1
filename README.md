@@ -81,7 +81,6 @@ our cash (`cash`) and how many years we look ahead (`horizon`).
 | `g` | yearly profit growth, per scenario | analyst forecasts plus your own judgement |
 | `peH` | the P/E at the end of the horizon, per scenario | your call: will the market pay more or less? |
 | `ytm`, `duration` | yield and duration (bond funds only) | the factsheet |
-| `conclusie` | your verdict, shown at the end of the report | you! |
 
 **Where's the factsheet?** On the website of the company behind the fund: iShares, Vanguard, Xtrackers, Amundi…
 Search the fund name or its ISIN there and open the fund page.
@@ -91,6 +90,26 @@ In a hurry? [justETF](https://www.justetf.com) shows the cost, size and top hold
 Every ETF gets three scenarios: bear (things go badly), base (your best guess) and bull (things go well).
 
 ⚠️ Changing `horizon`? Then change `peH` too. It's the P/E at the *end* of the horizon, so it depends on it.
+
+## Next pitch? The routine
+
+Back for a new ETF a few months later? Do this:
+
+1. **Grab the latest version.** In a terminal:
+   ```bash
+   git restore .
+   git pull
+   ```
+   Heads up: `git restore .` wipes your own changes from last time. Want to keep your old config? Copy it somewhere first.
+2. **Open the project** and run `renv::restore()`. Nothing changed? It's done in a sec.
+3. **Update the club numbers** in `config/club.yml`: `positie`, `portefeuille` and `cash`. The club grows, these change.
+4. **Add the new ETF** as a block (see above). Old ETFs you don't need anymore? Delete their block.
+5. **Refresh the old numbers too.** `pe0`, `dy`, `g` and `peH` go stale fast. Check them again.
+6. **Restart R** (Session → Restart R) and run `source("run_all.R")`.
+7. **Read the PDFs.** An assumption looks off? Tweak it and run again.
+8. **Share the PDFs** from `out/` with the board before the vote.
+
+That's it. Pitch ready. 🎯
 
 ## What the engine does (and why)
 
@@ -207,5 +226,8 @@ Error about `testthat`? Run `renv::install("testthat")` first.
 | `run_all.R` | the start button |
 | `tests/` | checks that the math still works |
 | `LOG.md` | what got built when |
+
+This repo is read-only: you can use it, but you can't push to it. Your changes stay on your own laptop.
+Found a bug or got an idea? Tell me.
 
 Made by Batiste for Le Gradient. Questions? Catch me at the next meeting.
