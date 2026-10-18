@@ -180,7 +180,7 @@ pipe(data.frame(` ` = c("What it says", "Depends on", "What you have to believe"
      c(26, 32, 38), "Two ways to look at the same model.")
 ```
 
-# Simulating the next `r jaren(H)`
+# Simulating the next `r if (H == 1) "year" else jaren(H)`
 
 ```{r mc-geen, eval = !heeft_mc, results = "asis"}
 cat("There are no scenarios for this fund, so there is nothing to simulate.\n\n")
@@ -297,7 +297,7 @@ cat("**What it tells us.** With the Student-t we got ", t99$x, " hits at 99%, ag
 
 **From one day to `r jaren(H)`.** Section 6 looked at one day. Here we look at our whole horizon. We draw 10,000 paths of daily Student-t shocks, fitted on all data ($\nu$ = `r round(res$fit_full[["df"]], 2)`). This time we assume no growth at all, so we only measure risk.
 
-**What it tells us.** In the worst 5% of cases we lose on average `r pct(res$es1[["ES"]])` over 1 year and `r pct(res$esH[["ES"]])` over `r jaren(H)`. On `r pos` that is `r eur(cfg$positie * res$esH[["ES"]])`.
+**What it tells us.** In the worst 5% of cases we lose on average `r if (H == 1) "" else paste(pct(res$es1[["ES"]]), "over 1 year and ")``r pct(res$esH[["ES"]])` over `r jaren(H)`. On `r pos` that is `r eur(cfg$positie * res$esH[["ES"]])`.
 
 ```{r twee-blikken, eval = heeft_mc, results = "asis"}
 cat("**Two views on risk.** This looks much worse than the simulation in Section 5. That is because both answer a different question.\n\n")
@@ -359,6 +359,4 @@ Table: Limitations of the model.
 
 Sources: Grinold & Kroner (2002); Bogle (1991); Fisher & Weil (1971); CFA Institute, *Capital Market Expectations*.
 
-# Conclusion
 
-`r cfg$conclusie %||% "No conclusion yet. Add the field conclusie for this fund in the config."`
