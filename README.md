@@ -209,12 +209,11 @@ testthat::test_dir("tests/testthat")
 You want to see `FAIL 0`.
 Error about `testthat`? Run `renv::install("testthat")` first.
 
-## Good to know
+## Disclaimer
 
-- **Same day, same data.** Prices are saved in `data/` for the day. Changed something in `load_etf()`? Clear it with `unlink("data/*.rds")`.
-- **Want the test ETFs?** In `run_all.R`, change `config/club.yml` to `config/etfs.yml`.
-- **Never paste a GitHub token in the R Console.** It ends up in `.Rhistory`. Trust us on this one.
-- **This is not investment advice.** The engine is only as good as the numbers you put in `club.yml`. It helps us think. It doesn't think for us.
+This is not investment advice.
+The engine is only as good as the numbers you put in `club.yml`.
+It helps us think. It doesn't think for us.
 
 ## Project map
 
