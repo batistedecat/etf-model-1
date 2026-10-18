@@ -1,139 +1,364 @@
 ---
-title: "ETF-analyse `r params$ticker`"
-subtitle: "Le Gradient · portefeuilleanalyse"
+title: "ETF analysis: `r params$ticker`"
+subtitle: "Le Gradient · portfolio analysis"
+date: "`r paste0(month.name[as.integer(format(Sys.Date(), '%m'))], ' ', as.integer(format(Sys.Date(), '%d')), ', ', format(Sys.Date(), '%Y'))`"
 output:
   pdf_document:
     latex_engine: xelatex
+    number_sections: true
+header-includes:
+  - \usepackage{float}
 params:
   ticker: "QDVE.DE"
   config: "config/club.yml"
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.height = 2.8)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.height = 2.8, fig.pos = "H")
 source("laden.R")
 cfg <- Filter(function(e) e$ticker == params$ticker, lees_config(params$config))[[1]]
 if (!exists("res", inherits = FALSE)) res <- run_etf(cfg)
 H <- cfg$horizon
-pct <- function(x, d = 1) paste0(formatC(100 * x, format = "f", digits = d, decimal.mark = ","), "%")
-eur <- function(x, d = 0) paste0("€ ", formatC(x, format = "f", digits = d, big.mark = ".", decimal.mark = ","))
-```
-
-# Kerncijfers
-
-```{r kern}
-kern <- data.frame(
-  Kenmerk = c("Koers", "Rendement per jaar (historisch)", "Jaarvolatiliteit", "Grootste daling",
-              "Verwacht rendement per jaar, base", paste0("Kans op verlies na ", H, " jaar, base"),
-              "Winstgroei nodig voor 8% per jaar", paste0("ES 95% over ", H, " jaar")),
-  Waarde = c(eur(res$data$koers, 2), pct(res$hist$cagr), pct(res$hist$vol), pct(res$hist$maxdd),
-             if (is.null(res$rs)) "geen scenario's" else pct(res$rs[["base"]]),
-             if (is.null(res$mc)) "geen scenario's" else pct(res$mc["base", "verlies"], 0),
-             if (is.na(res$be8)) "n.v.t." else pct(res$be8),
-             paste(eur(cfg$positie * res$esH[["ES"]]), "op", eur(cfg$positie))))
-knitr::kable(kern)
-```
-
-# Wat zit erin en datacontroles
-
-`r cfg$naam` (`r cfg$ticker`), type `r cfg$type`, sector `r cfg$sector`, kosten `r pct(cfg$ter, 2)` per jaar. Data vanaf `r res$data$checks$start`, `r res$data$checks$n` koersen. `r if (length(res$data$checks$waarschuwing)) paste0("Waarschuwingen: ", paste(res$data$checks$waarschuwing, collapse = "; "), ".") else "De datacontroles geven geen waarschuwingen."`
-
-`r if (res$data$valuta == "EUR") "De ETF noteert in euro; er is geen omrekening nodig." else paste0("De ETF noteert in ", res$data$valuta, ". Elke koers is omgerekend naar euro met de wisselkoers van die dag: $P^{EUR}_t = P^{", res$data$valuta, "}_t \\,/\\, \\text{EUR", res$data$valuta, "}_t$.")`
-
-# Historiek en drawdowns
-
-```{r koers, fig.height = 3.6}
-plot_koers(res$data$px)
-```
-
-```{r drawdown}
-plot_drawdown(res$data$px, cfg$drempel %||% 0.15)
-```
-
-```{r episodes}
-ep <- res$hist$episodes
-if (nrow(ep)) {
-  ep$daling <- pct(ep$daling)
-  knitr::kable(ep, col.names = c("Top", "Bodem", "Daling", "Terug op de top"), row.names = FALSE)
+pct <- function(x, d = 1) paste0(formatC(100 * x, format = "f", digits = d), "%")
+pct_s <- function(x, d = 1) paste0(ifelse(x > 0, "+", ""), pct(x, d))
+eur <- function(x, d = 0) paste0(formatC(x, format = "f", digits = d, big.mark = ","), " EUR")
+maand <- function(d) ifelse(is.na(d), "not yet", paste(month.abb[as.integer(format(d, "%m"))], format(d, "%Y")))
+dag <- function(d) paste(as.integer(format(d, "%d")), month.name[as.integer(format(d, "%m"))], format(d, "%Y"))
+pw <- function(p) if (p < 0.001) "p < 0.001" else paste("p =", formatC(p, format = "f", digits = 3))
+jaren <- function(n) if (n == 1) "1 year" else paste(n, "years")
+modellen <- c(empirisch = "Empirical", normaal = "Normal", student_t = "Student-t")
+sector_en <- c(technologie = "technology", gespreid = "diversified", obligaties = "bonds", grondstoffen = "commodities")
+sector <- if (!is.null(cfg$sector) && cfg$sector %in% names(sector_en)) sector_en[[cfg$sector]] else cfg$sector %||% "not given"
+soort <- switch(cfg$type, aandelen = "an equity fund", obligaties = "a bond fund", if (identical(cfg$sector, "grondstoffen")) "a commodity fund" else "a fund")
+pos <- eur(cfg$positie)
+eind <- end(res$data$px)
+drempel <- cfg$drempel %||% 0.15
+heeft_mc <- !is.null(res$mc)
+pipe <- function(df, w, cap) {
+  cat("| ", paste(names(df), collapse = " | "), " |\n", sep = "")
+  cat("|", paste0(":", strrep("-", w - 1), collapse = "|"), "|\n", sep = "")
+  for (i in seq_len(nrow(df))) cat("| ", paste(unlist(df[i, ]), collapse = " | "), " |\n", sep = "")
+  cat("\nTable: ", cap, "\n\n", sep = "")
 }
 ```
 
-# Verwacht rendement en Monte Carlo
+# Summary
 
-`r if (is.null(res$mc)) "De configuratie bevat geen scenario's voor deze ETF, dus er is geen Monte Carlo." else paste0("Verwacht rendement per jaar: bear ", pct(res$rs[['bear']]), ", base ", pct(res$rs[['base']]), ", bull ", pct(res$rs[['bull']]), ". De Monte Carlo simuleert 10.000 paden van een positie van ", eur(cfg$positie), " over ", H, " jaar, met ", cfg$stappen %||% 52, " stappen per jaar.")`
+This report looks at `r cfg$naam` for Le Gradient. It answers three questions. What did the fund do in the past? What can we expect over our `r H`-year horizon? And how much can we lose? All amounts are for a position of `r pos`. The data run until `r dag(eind)`.
 
-```{r mc-tabel, eval = !is.null(res$mc)}
-mc <- res$mc
-knitr::kable(data.frame(Scenario = rownames(mc), P10 = eur(mc[, "p10"]), P50 = eur(mc[, "p50"]),
-                        P90 = eur(mc[, "p90"]), Verlies = pct(mc[, "verlies"], 0), Gemiddelde = eur(mc[, "gem"])),
-             row.names = FALSE)
+```{r kern, results = "asis"}
+kern <- data.frame(
+  Figure = c("Price", "Return per year, past", "Volatility", "Worst fall",
+             "Expected return, base", paste("Chance of a loss after", jaren(H)),
+             "Profit growth needed for 8%", paste("Expected shortfall over", jaren(H))),
+  Value = c(eur(res$data$koers, 2), pct(res$hist$cagr), pct(res$hist$vol), pct(res$hist$maxdd),
+            if (is.null(res$rs)) "n/a" else pct(res$rs[["base"]]),
+            if (heeft_mc) pct(res$mc["base", "verlies"], 0) else "n/a",
+            if (is.na(res$be8)) "n/a" else pct(res$be8),
+            eur(cfg$positie * res$esH[["ES"]])),
+  Meaning = c("last closing price",
+              paste("average yearly growth since", format(start(res$data$px), "%Y")),
+              "typical yearly swing, up or down",
+              "biggest drop from a peak (Section 3)",
+              "our central forecast per year (Section 4)",
+              "share of simulated paths that end below the amount invested (Section 5)",
+              if (is.na(res$be8)) "only for equity funds" else "what the companies must deliver to earn 8% a year (Section 4)",
+              paste("average loss in the worst 5% of cases, on", pos, "(Section 8)")))
+pipe(kern[kern$Value != "n/a", ], c(30, 13, 57), "Key figures.")
 ```
 
-```{r football, eval = !is.null(res$mc), fig.height = 2.2}
+# The fund and the data
+
+```{r fonds, include = FALSE}
+w <- res$data$checks$waarschuwing
+w <- sub("korte historiek", "a short history", w)
+w <- sub("veel nulrendementen", "many days without a price change", w)
+w <- sub("sprong groter dan 25%", "a jump above 25%", w)
+w <- sub("gat groter dan 7 dagen", "a gap longer than 7 days", w)
+w <- sub("pieken verwijderd", "odd prices removed", w)
+checks <- if (length(w)) paste0("The data checks flag ", paste(w, collapse = "; "), ".") else "All data checks pass: no short history, no gaps longer than a week, no jumps above 25% and no odd prices."
+fx <- if (res$data$valuta == "EUR") "The fund trades in euro, so no conversion is needed." else paste0("The fund trades in ", res$data$valuta, ". We convert every price to euro with that day's exchange rate: $P^{EUR}_t = P^{", res$data$valuta, "}_t \\,/\\, \\text{EUR", res$data$valuta, "}_t$.")
+```
+
+**What it is.** An ETF is a fund that tracks an index and trades like a share. `r cfg$naam` (`r cfg$ticker`) is `r soort`. Sector: `r sector`. It costs `r pct(cfg$ter, 2)` a year (TER), taken from the fund's value.
+
+**Data.** We use daily closing prices from Yahoo Finance, adjusted for dividends and splits. The data run from `r dag(start(res$data$px))` to `r dag(eind)`: `r format(res$data$checks$n, big.mark = ",")` prices. `r checks` `r fx`
+
+# What happened in the past
+
+```{r historiek, include = FALSE}
+k <- res$hist$kalender
+k <- k[!is.na(k)]
+if (format(eind, "%m") != "12") k <- k[names(k) != format(eind, "%Y")]
+jaren_txt <- if (length(k) >= 2) paste0("Its best full year was ", names(k)[which.max(k)], " (", pct_s(max(k)), "), its worst ", names(k)[which.min(k)], " (", pct_s(min(k)), ").") else ""
+ep <- res$hist$episodes
+herstel <- if (nrow(ep)) as.Date(ep$herstel) else as.Date(character(0))
+open <- sum(is.na(herstel))
+ep_txt <- if (nrow(ep)) paste0("The table lists every fall of at least ", pct(drempel, 0), ": ", nrow(ep), " in total.", if (open) paste0(" ", open, if (open == 1) " has" else " have", " not been recovered yet.") else "") else paste0("The price never fell ", pct(drempel, 0), " or more.")
+obl_txt <- if (cfg$type == "obligaties") paste0(" For a bond fund we use a threshold of ", pct(drempel, 0), ", because bond prices rarely fall 15%.") else ""
+```
+
+**Growth and swings.** Since `r format(start(res$data$px), "%Y")` the fund grew `r pct(res$hist$cagr)` a year on average (CAGR). Its volatility is `r pct(res$hist$vol)` a year: in a typical year the price moves about that much up or down. `r jaren_txt`
+
+```{r koers, fig.height = 3.6, fig.cap = "Price in EUR (top) and daily log-return (bottom). A daily log-return is close to the percentage change of that day."}
+plot_koers(res$data$px)
+```
+
+**Drawdowns.** A drawdown is how far the price sits below its last peak. It shows what someone who bought at the top went through. The worst drawdown was `r pct(res$hist$maxdd)`. `r ep_txt``r obl_txt`
+
+```{r drawdown, fig.cap = paste0("Drawdown: how far the price sits below its last peak. Dashed line: the ", pct(drempel, 0), " threshold.")}
+plot_drawdown(res$data$px, drempel)
+```
+
+```{r episodes}
+if (nrow(ep)) {
+  knitr::kable(data.frame(Peak = maand(as.Date(ep$top)), Bottom = maand(as.Date(ep$bodem)), Fall = pct(ep$daling), `Back at the peak` = maand(herstel), check.names = FALSE),
+               caption = paste0("Every fall of at least ", pct(drempel, 0), "."))
+}
+```
+
+# Expected return
+
+```{r rendement, include = FALSE}
+sc_txt <- "Each scenario is a story: bear (things go badly), base (our central case) and bull (things go well)."
+if (cfg$type == "aandelen" && !is.null(cfg$waardering)) {
+  wd <- cfg$waardering
+  sc <- wd$scenarios
+  tab_r <- data.frame(Scenario = names(sc),
+                      `Profit growth` = sapply(sc, function(s) pct(s$g)),
+                      `P/E now to end` = sapply(sc, function(s) paste(wd$pe0, "to", s$peH)),
+                      Dividend = pct(wd$dy), Costs = pct(cfg$ter, 2),
+                      `Return per year` = pct(res$rs[names(sc)]), check.names = FALSE)
+  m <- (sc$base$peH / wd$pe0)^(1 / H) - 1
+  pe_txt <- if (abs(m) < 0.0005) paste0("In the base case the P/E stays at ", wd$pe0, ", so it has no effect.") else paste0("In the base case the P/E ", if (m < 0) "falls" else "rises", " from ", wd$pe0, " to ", sc$base$peH, ". That ", if (m < 0) "costs" else "adds", " about ", pct(abs(m)), " a year, because investors pay ", if (m < 0) "less" else "more", " for each euro of profit.")
+}
+if (cfg$type == "obligaties" && !is.null(cfg$obligaties)) {
+  ob <- cfg$obligaties
+  tab_r <- data.frame(Scenario = names(ob$scenarios),
+                      `Rate change` = sapply(ob$scenarios, function(s) sprintf("%+.1f pp", 100 * s$dy)),
+                      `Return per year` = pct(res$rs[names(ob$scenarios)]), check.names = FALSE)
+  hd_txt <- if (H < ob$duration) paste0("Our horizon is ", jaren(H), ", shorter than the duration. So a rate rise still costs us money, and a rate fall helps.") else "Our horizon is at least as long as the duration, so rate changes barely matter."
+}
+if (cfg$type == "overig" && !is.null(cfg$overig)) {
+  tab_r <- data.frame(Scenario = names(res$rs), `Return per year` = pct(res$rs), check.names = FALSE)
+}
+buffer <- if (!is.na(res$be8)) cfg$waardering$scenarios$base$g - res$be8 else NA
+```
+
+```{r rend-aandelen, eval = cfg$type == "aandelen" && !is.null(cfg$waardering), results = "asis"}
+cat("**Where the return comes from.** A stock fund earns money in three ways. The companies grow their profits. Investors pay more or less for each euro of profit (the P/E ratio). And the fund pays dividends. We subtract the yearly costs. This is the Grinold-Kroner model.", sc_txt, "\n\n")
+```
+
+```{r rend-obligaties, eval = cfg$type == "obligaties" && !is.null(cfg$obligaties), results = "asis"}
+cat("**Where the return comes from.** A bond fund earns the interest on its bonds. Today that yield is ", pct(ob$ytm), " a year (YTM). When interest rates rise, bond prices fall straight away. But the fund then reinvests at the higher rate, so it earns more later. The duration (", ob$duration, " years) tells how long it takes for both effects to cancel out. ", hd_txt, " ", sc_txt, "\n\n", sep = "")
+```
+
+```{r rend-overig, eval = cfg$type == "overig" && !is.null(cfg$overig), results = "asis"}
+cat("**No valuation model.** This fund holds something that pays no profit or interest, like gold. So there is nothing to value, and the scenarios below are assumptions.", sc_txt, "\n\n")
+```
+
+```{r rend-geen, eval = is.null(res$rs), results = "asis"}
+cat("**No scenarios.** The config holds no scenarios for this fund. So there is no forecast, no break-even and no simulation.\n\n")
+```
+
+```{r rend-tabel, eval = !is.null(res$rs)}
+knitr::kable(tab_r, row.names = FALSE, caption = "Expected return per year, per scenario.")
+```
+
+```{r rend-pe, eval = cfg$type == "aandelen" && !is.null(cfg$waardering), results = "asis"}
+cat(pe_txt, "\n\n")
+```
+
+```{r breakeven, eval = !is.na(res$be8), results = "asis"}
+cat("**Turning the question around.** A forecast can be wrong. So we also ask: how much profit growth do we need to earn 8% a year? The answer is ", pct(res$be8), ". ",
+    if (buffer >= 0) paste0("Our base case assumes ", pct(cfg$waardering$scenarios$base$g), ". So profits can grow ", formatC(100 * buffer, format = "f", digits = 1), " percentage points slower than we expect, and we still earn 8%.")
+    else paste0("Our base case assumes only ", pct(cfg$waardering$scenarios$base$g), ". So even our central case does not reach 8%."), "\n\n", sep = "")
+cat("**Why 8%?** It is roughly the long-run return of stocks. A stock fund has to clear that bar to be worth its risk.\n\n")
+pipe(data.frame(` ` = c("What it says", "Depends on", "What you have to believe"),
+                `Expected return` = c(paste0("\"we think ", pct(res$rs[["base"]]), " a year\""), "growth, P/E, dividend", "one precise forecast"),
+                `Break-even` = c(paste0("\"we need ", pct(res$be8), " profit growth\""), "P/E, dividend, the 8% target", "only that growth stays above a bar"), check.names = FALSE),
+     c(26, 32, 38), "Two ways to look at the same model.")
+```
+
+# Simulating the next `r jaren(H)`
+
+```{r mc-geen, eval = !heeft_mc, results = "asis"}
+cat("There are no scenarios for this fund, so there is nothing to simulate.\n\n")
+```
+
+```{r mc-uitleg, eval = heeft_mc, results = "asis"}
+mc <- res$mc
+cat("**Why we simulate.** The expected return is one number, but the real path is uncertain. So we let the computer draw 10,000 possible paths for ", pos, " over ", jaren(H), ", in weekly steps. Each path grows on average at the scenario's expected return. The ups and downs are as large as in the past (volatility ", pct(res$hist$vol), " a year). This is a Monte Carlo simulation with geometric Brownian motion (GBM).\n\n", sep = "")
+cat("**How to read it.** P50 is the middle outcome: half of the paths end above it, half below. P10 is a bad case: only 1 in 10 paths end lower. P90 is a good case: only 1 in 10 end higher. The chance of a loss is the share of paths that end below ", pos, ".\n\n", sep = "")
+```
+
+```{r mc-tabel, eval = heeft_mc}
+knitr::kable(data.frame(Scenario = rownames(mc), P10 = eur(mc[, "p10"]), P50 = eur(mc[, "p50"]),
+                        P90 = eur(mc[, "p90"]), `Chance of a loss` = pct(mc[, "verlies"], 0), check.names = FALSE),
+             row.names = FALSE, caption = paste("Value of", pos, "after", jaren(H), "(10,000 paths)."))
+```
+
+```{r mc-conclusie, eval = heeft_mc, results = "asis"}
+cat("**What it tells us.** In the base case ", pos, " becomes ", eur(mc["base", "p50"]), " in the middle outcome. Still, ", pct(mc["base", "verlies"], 0), " of the paths end with a loss. In a bad case (P10) we are left with ", eur(mc["base", "p10"]), ". Even in the bull case the chance of a loss is ", pct(mc["bull", "verlies"], 0), ".\n\n", sep = "")
+```
+
+```{r football, eval = heeft_mc, fig.height = 2.2, fig.cap = paste("P10 to P90 after", jaren(H), "per scenario. Dot: the middle outcome (P50). Dashed line: the amount invested.")}
 plot_football(res$mc, cfg$positie)
 ```
 
-```{r paden, eval = !is.null(res$mc), fig.height = 3.2, fig.width = 7.5}
+```{r paden, eval = heeft_mc, fig.height = 3.2, fig.width = 7.5, fig.cap = "50 of the 10,000 simulated paths per scenario, with the P10-P90 band in blue."}
 set.seed(42)
 plot_paden(res$rs, res$hist$vol, cfg$positie, H, stappen = cfg$stappen %||% 52)
 ```
 
-# Risico: Student-t, getraind en getest
+# How much can we lose in one day?
 
-`r if (res$split$ok) paste0("Training tot ", format(res$split$start_test - 1), ", test vanaf ", format(res$split$start_test), ".") else paste0("Geen backtest: ", res$split$reden, ".")` De Student-t heeft $\nu$ = `r round(res$fit[["df"]], 2)` vrijheidsgraden. `r if (cfg$centrum == "nul") paste0("Het centrum staat op nul: voor één dag is het verwachte rendement verwaarloosbaar tegenover de spreiding, en het gemiddelde dagrendement in de training (", pct(mean(as.numeric(res$split$train)), 2), ") is geen veilige aanname voor de toekomst.") else ""`
+```{r dag, include = FALSE}
+nm <- res$norm
+normaal_dag <- nm[["jb_dag"]] < 0.05
+jb_txt <- paste0("The Jarque-Bera test ", if (normaal_dag) "rejects" else "does not reject", " normality for daily returns (", pw(nm[["jb_dag"]]), ")")
+jb_txt <- paste0(jb_txt, if ((nm[["jb_week"]] < 0.05) == normaal_dag) ", and also for weekly ones (" else ", but not for weekly ones (", pw(nm[["jb_week"]]), ")")
+jb_txt <- paste0(jb_txt, if (nm[["jb_maand"]] < 0.05) paste0(". Monthly returns are rejected too (", pw(nm[["jb_maand"]]), ").") else paste0(". Monthly returns pass (", pw(nm[["jb_maand"]]), "): over longer periods many small moves add up and look more normal."))
+skew_txt <- if (nm[["skew"]] < -0.1) paste0(" Skewness is ", formatC(nm[["skew"]], format = "f", digits = 2), ": falls are sharper than rises.") else ""
+r3 <- rbind(res$r95, res$r99) * cfg$positie
+v95 <- r3[1:3, "VaR"]
+es99n <- r3[5, "ES"]
+es99t <- r3[6, "ES"]
+dag_txt <- paste0("On a bad day (95%) the three models ", if (max(v95) / min(v95) < 1.25) paste0("roughly agree: a loss of about ", round(min(v95)), " to ", round(max(v95)), " EUR.") else paste0("differ: from ", round(min(v95)), " to ", round(max(v95)), " EUR."))
+dag_txt <- paste0(dag_txt, " At 99% the normal model puts the ES at ", round(es99n), " EUR, the Student-t at ", round(es99t), " EUR.", if (es99t > 1.2 * es99n) " The deeper into the tail, the more the bell curve understates the risk." else "")
+gem_dag <- mean(as.numeric(res$split$train))
+gem_jaar <- exp(252 * gem_dag) - 1
+centrum_txt <- if (cfg$centrum == "nul") paste0(" We also set the expected daily return to zero. For one day it is tiny next to the swings (", pct_s(gem_dag, 2), " a day on average).", if (gem_jaar > 0.10) paste0(" The past years were also unusually strong (about ", pct(gem_jaar, 0), " a year), so we don't count on that.") else "") else ""
+split_txt <- if (res$split$ok) paste0("We fit everything on the data up to ", dag(res$split$start_test - 1), " (training) and keep the rest for a test in Section 7.") else "We fit everything on all data, because there is too little for a separate test."
+```
+
+**VaR and ES.** The 95% Value-at-Risk (VaR) is the loss we only exceed on the worst 5% of days. The Expected Shortfall (ES) is the average loss on those worst days. ES looks deeper into the tail, so it is always larger than VaR. We do the same at 99%: the worst 1 in 100 days.
+
+**Are daily returns normal?** A normal distribution is the bell curve. Its kurtosis is 3; here it is `r formatC(nm[["kurt"]], format = "f", digits = 1)`. So extreme days happen `r if (nm[["kurt"]] > 4) "far more often" else "about as often as"` `r if (nm[["kurt"]] > 4) "than the bell curve allows" else "the bell curve allows"`.`r skew_txt` `r jb_txt`
+
+**Three ways to estimate.** Empirical: we sort the past daily losses and read off the worst 5% (or 1%). Normal: we assume the bell curve. Student-t: a bell curve with fatter tails, so extreme days are more likely. Our fit has $\nu$ = `r round(res$fit[["df"]], 2)` degrees of freedom. The lower $\nu$, the fatter the tails; the bell curve has $\nu = \infty$.
+
+**Two choices.** `r split_txt``r centrum_txt`
 
 ```{r var-es}
-r3 <- rbind(res$r95, res$r99) * cfg$positie
-knitr::kable(data.frame(Model = rownames(res$r95), `VaR 95%` = round(r3[1:3, 1], 1), `ES 95%` = round(r3[1:3, 2], 1),
+knitr::kable(data.frame(Model = modellen[rownames(res$r95)], `VaR 95%` = round(r3[1:3, 1], 1), `ES 95%` = round(r3[1:3, 2], 1),
                         `VaR 99%` = round(r3[4:6, 1], 1), `ES 99%` = round(r3[4:6, 2], 1), check.names = FALSE),
-             row.names = FALSE, caption = paste("Verlies op één dag in euro, positie", eur(cfg$positie)))
+             row.names = FALSE, caption = paste("Loss on one day in EUR, on a position of", pos, "(training data)."))
 ```
 
-```{r backtest, eval = !is.null(res$bt)}
+**What it tells us.** `r dag_txt`
+
+# Does the risk model hold up?
+
+```{r bt-geen, eval = is.null(res$bt), results = "asis"}
+reden <- sub("training te kort \\((\\d+) dagen\\)", "the training period is too short (\\1 days)", res$split$reden)
+reden <- sub("te weinig data", "there is too little data", reden)
+cat("There is no fair test for this fund: ", reden, ". So we cannot check the model yet, and the numbers in Section 6 are untested.\n\n", sep = "")
+```
+
+```{r bt-uitleg, eval = !is.null(res$bt), results = "asis"}
+cat("**How we test.** The VaR in Section 6 comes from the training years. Now we check it on the years since ", dag(res$split$start_test), ", which the model has never seen. A hit is a day where the real loss is bigger than the VaR. At 99% we expect a hit on 1 in 100 days. We check three things.\n\n", sep = "")
+pipe(data.frame(Check = c("Count (Kupiec test)", "Clustering", "Size (ES ratio)"),
+                Question = c("Do we get the right number of hits?", "Do the hits come in groups?", "Are the hits as large as the ES predicted?"),
+                `Good if` = c("p above 0.05", "p above 0.05", "close to 1"), check.names = FALSE),
+     c(24, 50, 18), "What the backtest checks.")
+```
+
+```{r bt-tabel, eval = !is.null(res$bt)}
 b <- res$bt
-b$p_kupiec <- round(b$p_kupiec, 3)
-b$p_indep <- round(b$p_indep, 3)
-b$es_ratio <- round(b$es_ratio, 2)
-knitr::kable(b, row.names = FALSE, caption = "Backtest op de testperiode")
+knitr::kable(data.frame(Level = pct(b$alpha, 0), Model = modellen[b$model], Hits = b$x, Expected = round(b$verwacht, 1),
+                        `Count p` = ifelse(b$p_kupiec < 0.001, "<0.001", formatC(b$p_kupiec, format = "f", digits = 3)), `Clustering p` = ifelse(b$p_indep < 0.001, "<0.001", formatC(b$p_indep, format = "f", digits = 3)), `Size ratio` = round(b$es_ratio, 2),
+                        check.names = FALSE),
+             row.names = FALSE, caption = "Backtest on the test years.")
 ```
 
-# Horizon en limieten
-
-Verlies over 1 jaar (ES 95%): `r pct(res$es1[["ES"]])` van de positie. Over de horizon van `r H` jaar: `r pct(res$esH[["ES"]])`, of `r eur(cfg$positie * res$esH[["ES"]])` op `r eur(cfg$positie)`. Dit is zuiver risico, zonder verwachte groei.
-
-```{r limieten}
-l <- res$limieten
-l$waarde <- ifelse(is.na(l$waarde), "n.v.t.", pct(l$waarde))
-l$grens <- pct(l$grens, 0)
-knitr::kable(l[, c("regel", "waarde", "grens", "ok")], col.names = c("Regel", "Waarde", "Grens", "OK"), row.names = FALSE)
+```{r bt-conclusie, eval = !is.null(res$bt), results = "asis"}
+t99 <- b[b$alpha == 0.99 & b$model == "student_t", ]
+t95 <- b[b$alpha == 0.95 & b$model == "student_t", ]
+tel <- if (t99$p_kupiec >= 0.05) {
+  paste0("The count test passes (", pw(t99$p_kupiec), ").")
+} else if (t99$x > t99$verwacht) {
+  paste0("That is ", if (t99$x > 2 * t99$verwacht) "far " else "", "too many: the count test fails (", pw(t99$p_kupiec), "). The model learned from calmer years and understates today's risk, so read Section 6 as a lower bound.")
+} else {
+  paste0("That is too few: the count test fails (", pw(t99$p_kupiec), "). The model is too careful.")
+}
+clus <- if (min(b$p_indep[b$model == "student_t"]) < 0.05) {
+  "The hits come in clusters: bad days follow each other. Our model uses one fixed level of volatility, so it can't raise its guard when markets get nervous."
+} else {
+  "The hits are spread out over time, so they don't cluster."
+}
+grootte <- if (is.na(t99$es_ratio)) "" else paste0(" When a hit happens, the loss is on average ", formatC(t99$es_ratio, format = "f", digits = 2), " times the predicted ES. ",
+                                                    if (t99$es_ratio > 1.2) "So bad days are worse than the model predicts." else if (t99$es_ratio < 0.8) "So bad days are milder than the model predicts." else "So the size is about right.")
+cat("**What it tells us.** With the Student-t we got ", t99$x, " hits at 99%, against ", formatC(t99$verwacht, format = "f", digits = 1), " expected. ", tel,
+    " At 95% we got ", t95$x, " against ", formatC(t95$verwacht, format = "f", digits = 1), " (", pw(t95$p_kupiec), "). ", clus, grootte, "\n\n", sep = "")
 ```
 
-# Methode en beperkingen
+# Risk over our horizon
 
-**Aandelen** (Grinold–Kroner, uitbreiding van Bogle):
+**From one day to `r jaren(H)`.** Section 6 looked at one day. Here we look at our whole horizon. We draw 10,000 paths of daily Student-t shocks, fitted on all data ($\nu$ = `r round(res$fit_full[["df"]], 2)`). This time we assume no growth at all, so we only measure risk.
+
+**What it tells us.** In the worst 5% of cases we lose on average `r pct(res$es1[["ES"]])` over 1 year and `r pct(res$esH[["ES"]])` over `r jaren(H)`. On `r pos` that is `r eur(cfg$positie * res$esH[["ES"]])`.
+
+```{r twee-blikken, eval = heeft_mc, results = "asis"}
+cat("**Two views on risk.** This looks much worse than the simulation in Section 5. That is because both answer a different question.\n\n")
+pipe(data.frame(` ` = c("Question", "Growth", "Daily shocks", "Answer"),
+                `Simulation (Section 5)` = c("What can we expect?", paste0("the scenario's return (base ", pct(res$rs[["base"]]), ")"), "bell curve", paste(pct(res$mc["base", "verlies"], 0), "chance of a loss")),
+                `ES over the horizon` = c("How deep can it go?", "none", "Student-t, fat tails", paste(eur(cfg$positie * res$esH[["ES"]]), "average loss in the worst 5%")), check.names = FALSE),
+     c(16, 40, 44), "Two views on the same risk.")
+cat("Together they give the honest picture for a pitch: what we expect, and how bad it can get.\n\n")
+```
+
+# Club limits
+
+```{r limieten, include = FALSE}
+regels <- c("Per ETF", "Per sector", "Per company (look-through)", "Cash after purchase")
+lim_tab <- function(l) data.frame(Rule = regels, Value = ifelse(is.na(l$waarde), "n/a", pct(l$waarde)), Limit = paste(ifelse(l$soort == "max", "max", "min"), pct(l$grens, 0)),
+                                  Met = ifelse(is.na(l$ok), "n/a", ifelse(l$ok, "yes", "no")), check.names = FALSE)
+gebroken <- function(l) regels[!is.na(l$ok) & !l$ok]
+g1 <- gebroken(res$limieten)
+g30 <- gebroken(res$limieten30)
+top_txt <- if (is.null(cfg$top_positie)) " We have no data on the fund's largest holding, so we skip the company rule." else paste0(" For the company rule we look through the fund: its largest holding is ", pct(cfg$top_positie), " of the fund, so ", pos, " in the fund puts ", eur(cfg$positie * cfg$top_positie), " in that one company.")
+sec_txt <- if (is.na(res$limieten$waarde[2])) " A broad fund or a bond fund has no single sector, so the sector rule does not apply." else ""
+lim_txt <- paste0("With a position of ", pos, " in a portfolio of ", eur(cfg$portefeuille), ", ", if (length(g1)) paste0("this rule is broken: ", paste(g1, collapse = ", "), ".") else "all rules are met.")
+lim30_txt <- paste0(" At the largest position the rules allow (30%, ", eur(0.3 * cfg$portefeuille), "), ", if (length(g30)) paste0("this rule breaks: ", paste(g30, collapse = ", "), ".") else "all rules still hold.")
+```
+
+**Our rules.** The club holds at most 30% of the portfolio in one ETF, 40% in one sector and 20% in one company. It always keeps at least 5% in cash.`r top_txt``r sec_txt`
+
+```{r lim-tabel}
+knitr::kable(lim_tab(res$limieten), row.names = FALSE, caption = paste0("Club limits for a position of ", pos, "."))
+```
+
+**What it tells us.** `r lim_txt``r lim30_txt` These checks look at this fund alone. Other funds in the portfolio can add to the same sector or company.
+
+# Method and limitations
+
+**Equity funds** (Grinold-Kroner, an extension of Bogle). Return is profit growth, plus the yearly change in P/E, plus dividend, minus costs:
 $$1 + r = (1+g)\left(\frac{PE_H}{PE_0}\right)^{1/H} + dy - TER$$
 
-**Break-even** (Grinold–Kroner, opgelost naar $g$):
-$$g^{*} = \frac{1 + r_{doel} - dy + TER}{(PE_H/PE_0)^{1/H}} - 1$$
+**Break-even.** The same formula, solved for growth:
+$$g^{*} = \frac{1 + r_{target} - dy + TER}{(PE_H/PE_0)^{1/H}} - 1$$
 
-**Obligaties** (duration en immunisatie):
+**Bond funds** (duration and immunisation). Yield minus costs, plus the part of a rate change $\Delta y$ that is not yet earned back by year $H$:
 $$r \approx ytm - TER + \Delta y\,\frac{H - D}{H}$$
 
-**Simulatie** (GBM, Monte Carlo, $\mu = \ln(1+r)$):
+**Simulation** (GBM, Monte Carlo, $\mu = \ln(1+r)$). Each week the value grows by the drift, minus a small correction for volatility, plus a random shock $Z$:
 $$S_{t+\Delta t} = S_t \exp\!\left(\left(\mu - \tfrac{\sigma^2}{2}\right)\Delta t + \sigma\sqrt{\Delta t}\,Z\right)$$
 
-**Dagrisico**: Student-t gefit op $100\,L$, VaR en ES op drie manieren, backtest met Kupiec en onafhankelijkheid.
+**Daily risk.** A Student-t fitted on 100 times the daily loss (that keeps the fit stable). VaR and ES three ways. A backtest with the Kupiec test and a clustering test.
 
-| Beperking              | Waarom het telt                                              |
-|:-----------------------|:-------------------------------------------------------------|
-| Wisselkoers            | winsten in dollar; het model houdt EURUSD constant           |
-| Eén getal per scenario | spreiding rond een scenario komt alleen uit de Monte Carlo   |
-| Forward P/E            | `pe0`, `peH` en `g` moeten op dezelfde verwachte winst slaan |
-| Kosten                 | makelaarsloon, spread en beurstaks zitten niet in het model  |
-| Constante volatiliteit | GBM en de t-fit volgen geen stressperiodes (zie backtest)    |
+| Limitation              | Why it matters                                                       |
+|:------------------------|:---------------------------------------------------------------------|
+| Exchange rate      | profits are often in dollars; the model keeps EURUSD fixed      |
+| One number per scenario | the spread around a scenario only comes from the simulation |
+| Forward P/E        | `pe0`, `peH` and `g` must refer to the same expected profits    |
+| Trading costs      | broker fees, spread and stock-exchange tax are not in the model |
+| Fixed volatility   | the simulation and the t-fit don't follow stress periods (Section 7) |
 
-Bronnen: Grinold & Kroner (2002); Bogle (1991); Fisher & Weil (1971); CFA Institute, *Capital Market Expectations*.
+Table: Limitations of the model.
 
-# Conclusie
+Sources: Grinold & Kroner (2002); Bogle (1991); Fisher & Weil (1971); CFA Institute, *Capital Market Expectations*.
 
-`r cfg$conclusie %||% "Nog geen conclusie: zet ze als veld conclusie bij deze ETF in de config."`
+# Conclusion
+
+`r cfg$conclusie %||% "No conclusion yet. Add the field conclusie for this fund in the config."`

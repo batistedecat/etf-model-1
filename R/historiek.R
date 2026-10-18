@@ -76,10 +76,10 @@ plot_koers <- function(px) {
   r <- diff(log(px))[-1]
   
   # bovenste paneel: koers in euro
-  p <- plot(px, main = "Koers (EUR)", lwd = 1.5)
+  p <- plot(px, main = "Price (EUR)", lwd = 1.5)
   
   # onderste paneel: on = NA maakt een nieuw paneel,
-  p <- lines(r, on = NA, main = "Dagelijks log-rendement", lwd = 0.6)
+  p <- lines(r, on = NA, main = "Daily log-return", lwd = 0.6)
   
   # return plot object,zou moeten getekent worden bij het knitten vd markdown sebiet
   p
@@ -97,8 +97,8 @@ plot_drawdown <- function(px, drempel = 0.15) {
     geom_hline(yintercept = -100 * drempel, linetype = "dashed",
                colour = "firebrick", linewidth = 0.4) +            # drempel: alles eronder telt als episode
     annotate("text", x = min(df$datum), y = -100 * drempel,
-             label = paste0("drempel -", 100 * drempel, "%"),
+             label = paste0("threshold -", 100 * drempel, "%"),
              hjust = 0, vjust = -0.5, size = 3, colour = "firebrick") +   # label links boven de lijn
-    labs(x = NULL, y = "Drawdown (%)", title = "Daling tegenover de vorige top") +
+    labs(x = NULL, y = "Drawdown (%)", title = "Fall from the previous peak") +
     theme_minimal(base_size = 10)
 }

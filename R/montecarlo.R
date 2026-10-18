@@ -57,7 +57,7 @@ plot_football <- function(mc, positie) {
   
   # aslabel met horizon (uit attr van mc_etf)
   jaren <- attr(mc, "jaren")
-  as_y <- if (is.null(jaren)) "Waarde (EUR)" else paste0("Waarde na ", jaren, " jaar (EUR)")
+  as_y <- if (is.null(jaren)) "Value (EUR)" else paste0("Value after ", jaren, " years (EUR)")
   
   ggplot(d) +
     geom_linerange(aes(x = scenario, ymin = p10, ymax = p90),
@@ -65,7 +65,7 @@ plot_football <- function(mc, positie) {
     geom_point(aes(scenario, p50), size = 2.5) +                   # mediaan
     geom_hline(yintercept = positie, linetype = "dashed") +        # inleg
     coord_flip() +                                                 # liggende balken
-    labs(x = NULL, y = as_y, title = "P10 tot P90 per scenario, punt = mediaan, streep = inleg") +
+    labs(x = NULL, y = as_y, title = "P10 to P90 per scenario, dot = median, dashed = amount invested") +
     theme_minimal(base_size = 10)
 }
 
@@ -115,8 +115,8 @@ plot_paden <- function(rs, sigma, positie, jaren, n_toon = 50, n = 10000, stappe
     geom_text(data = lab, aes(jaren, y, label = tekst), hjust = -0.1, size = 2.8) + # eindwaarden
     facet_wrap(~ scenario, nrow = 1) +                                      # naast elkaar, zelfde y-as
     scale_x_continuous(expand = expansion(mult = c(0.01, 0.35))) +          # ruimte voor labels
-    labs(x = "Jaren", y = "Waarde (EUR)",
-         title = paste0(n_toon, " van ", n, " paden per scenario, band = P10-P90, streep = inleg")) +
+    labs(x = "Years", y = "Value (EUR)",
+         title = paste0(n_toon, " of ", n, " paths per scenario, band = P10-P90, dashed = amount invested")) +
     theme_minimal(base_size = 10) +
     theme(strip.text = element_text(face = "bold", size = 10))             # scenarionaam vet
 }
