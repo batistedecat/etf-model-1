@@ -1,3 +1,6 @@
+
+https://github.com/user-attachments/assets/715bba99-5dc2-4c91-b8e5-4cee5fa53e5c
+
 # ETF engine
 
 Feed it an ETF. Get back a full risk report as a PDF.
