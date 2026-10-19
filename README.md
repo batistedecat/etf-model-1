@@ -232,4 +232,4 @@ It helps us think. It doesn't think for us.
 | `SETUP.md` | step-by-step install guide for newbies |
 
 
-Made by Batiste Decat for [Le Gradient](https://legradient.be). Questions? ask me via [mail](batiste.decat@ugent.be)
+Made by Batiste Decat for [Le Gradient](https://legradient.be). Questions? ask me via mail: batiste.decat@ugent.be
