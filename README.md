@@ -156,7 +156,7 @@ Every step lives in its own file in `R/`.
 
 9. **Write the report** (`rapport.Rmd`)
    Everything above in one PDF, in plain English, with charts.
-   *Why:* so everyone can read it before the vote. Not just the stats nerds.
+   *Why:* so everyone can read it before the vote. 
 
 `run_etf()` in `pipeline.R` runs steps 1 to 8 for one ETF.
 `run_all.R` does it for every ETF in the config and writes the reports.
@@ -231,7 +231,5 @@ It helps us think. It doesn't think for us.
 | `tests/` | checks that the math still works |
 | `SETUP.md` | step-by-step install guide for newbies |
 
-This repo is read-only: you can use it, but you can't push to it. Your changes stay on your own laptop.
-Found a bug or got an idea? Tell me.
 
-Made by Batiste for [Le Gradient](https://legradient.be). Questions? Catch me at the next meeting.
+Made by Batiste Decat for [Le Gradient](https://legradient.be). Questions? ask me via [mail](batiste.decat@ugent.be)
