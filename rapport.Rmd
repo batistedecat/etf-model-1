@@ -150,7 +150,22 @@ cat("**Where the return comes from.** A stock fund earns money in three ways. Th
 ```
 
 ```{r rend-obligaties, eval = cfg$type == "obligaties" && !is.null(cfg$obligaties), results = "asis"}
-cat("**Where the return comes from.** A bond fund earns the interest on its bonds. Today that yield is ", pct(ob$ytm), " a year (YTM). When interest rates rise, bond prices fall straight away. But the fund then reinvests at the higher rate, so it earns more later. The duration (", ob$duration, " years) tells how long it takes for both effects to cancel out. ", hd_txt, " ", sc_txt, "\n\n", sep = "")
+D <- ob$duration
+D_txt <- format(round(D, 2))
+dys <- sapply(ob$scenarios, function(s) if (is.null(s$dy)) NA else s$dy)
+stijg <- dys[!is.na(dys) & dys > 0]
+voorbeeld <- ""
+if (length(stijg) > 0) {
+  naam <- names(stijg)[which.max(stijg)]
+  schok <- stijg[[naam]]
+  verlies <- D * schok
+  inhaal <- schok * H
+  rest <- if (verlies > inhaal) paste0("we are still about ", pct(verlies - inhaal), " behind.") else "the loss is already made up."
+  voorbeeld <- paste0("**Example.** In the ", naam, " case rates rise by ", format(round(100 * schok, 2)), " percentage points. The fund loses about ", pct(verlies), " at once and then earns ", pct(schok), " more a year. After ", jaren(H), " ", rest, "\n\n")
+}
+cat("**Where the return comes from.** A bond fund earns the interest on its bonds. Today that yield is ", pct(ob$ytm), " a year (YTM). When rates move, two things happen. First, the price moves at once: if rates rise by 1 percentage point, the fund loses about ", D_txt, "% (the duration). Second, the fund reinvests at the new rate, so after a rise it earns a bit more every year. If rates jump once and then stay there, the extra income makes up for the loss after about ", jaren(max(1, round(D))), ". When rates fall, it works the other way around.\n\n",
+    voorbeeld,
+    hd_txt, " We assume rates move once and then stay put. If they rise slowly, catching up takes longer. ", sc_txt, "\n\n", sep = "")
 ```
 
 ```{r rend-overig, eval = cfg$type == "overig" && !is.null(cfg$overig), results = "asis"}

@@ -2,7 +2,7 @@ algemeen:
   positie: 1000
   portefeuille: 12000
   cash: 12000
-  horizon: 1
+  horizon: 2
   min_test: 750
   min_train: 1000
   frac_test: 0.30
