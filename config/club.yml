@@ -2,7 +2,7 @@ algemeen:
   positie: 1000
   portefeuille: 12000
   cash: 12000
-  horizon: 2
+  horizon: 1
   min_test: 750
   min_train: 1000
   frac_test: 0.30
@@ -62,6 +62,19 @@ etfs:
         bear: {g: 0.05, peH: 25.6}
         base: {g: 0.11, peH: 26.5}
         bull: {g: 0.16, peH: 26.9}
+  - ticker: NVD.DE
+    naam: NVIDIA (aandeel)
+    type: aandelen
+    sector: technologie
+    ter: 0
+    top_positie: 1
+    waardering:
+      pe0: 23        # forward P/E, Zacks 19/10/2026
+      dy: 0.0002     # dividend bijna nul
+      scenarios:     # g en peH = eigen aanname, nog nakijken
+        bear: {g: 0.00, peH: 19}   # winst vlak, P/E zakt naar S&P 500-niveau
+        base: {g: 0.35, peH: 21}   # helft van de analistenverwachting (~70%)
+        bull: {g: 0.70, peH: 23}   # analistenverwachting, P/E blijft
   - ticker: IEAG.AS
     drempel: 0.05
     naam: iShares EUR Aggregate Bond ESG SRI
@@ -72,6 +85,6 @@ etfs:
       ytm: 0.0394
       duration: 5.95
       scenarios:
-        bear: {dy: 0.02}
-        base: {dy: 0.0}
+        bear: {dy: 0.01}
+        base: {dy: 0.00}
         bull: {dy: -0.01}
