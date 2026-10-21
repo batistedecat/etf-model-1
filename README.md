@@ -82,7 +82,7 @@ our cash (`cash`) and how many years we look ahead (`horizon`).
 | `ter` | yearly cost: `0.0015` means 0.15% | the factsheet |
 | `top_positie` | weight of the biggest company in the fund | the holdings tab on the fund's website |
 | `pe0` | the P/E today | FactSet Earnings Insight or the factsheet |
-| `dy` | dividend yield | the factsheet |
+| `dy` | dividend yield (or rate change if of type `obligaties`(bonds) | the factsheet |
 | `g` | yearly profit growth, per scenario | analyst forecasts plus your own judgement |
 | `peH` | the P/E at the end of the horizon, per scenario | your call: will the market pay more or less? |
 | `ytm`, `duration` | yield and duration (bond funds only) | the factsheet |
