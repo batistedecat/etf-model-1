@@ -48,14 +48,14 @@ schoon <- function(x, n = 80) {
 ticker_ok <- function(x) grepl("^[A-Z0-9][A-Z0-9.-]{0,14}$", x)
 
 info <- function(label, hulp) {
-  tagList(label, tooltip(span(" ⓘ", class = "text-primary", style = "cursor: help;"), hulp))
+  tagList(label, tooltip(span(class = "lg-info", " ⓘ"), hulp))
 }
 
 scen_rij <- function(sc, ids, waarden, step) {
   velden <- Map(function(id, v, s) numericInput(id, NULL, v, step = s), ids, waarden, step)
   breedte <- if (length(ids) == 2) c(2, 5, 5) else c(4, 8)
   do.call(layout_columns, c(list(col_widths = breedte, gap = "0.5rem", class = "align-items-center",
-                                 tags$b(sc)), unname(velden)))
+                                 span(class = "lg-scen", sc)), unname(velden)))
 }
 
 scen_kop <- function(...) {
@@ -81,20 +81,108 @@ vergelijk_rij <- function(x) {
 nog_niet <- function(res) validate(need(res, "Click “Run full model” in the sidebar to fill this tab."))
 
 
+# ---- huisstijl Le Gradient (zoals legradient.be) ----
+
+lg <- list(zwart = "#141414", grijs = "#494841", tekst2 = "#666666", lijn = "#E4E4E4", licht = "#F7F7F7")
+
+lg_font <- font_collection(font_google("Instrument Sans", local = FALSE, wght = c(400, 500, 600, 700)),
+                           "Inter", "system-ui", "-apple-system", "Segoe UI", "sans-serif")
+
+lg_css <- r"(
+.lg-brand { display: flex; align-items: center; gap: .65rem; width: 100%; }
+.lg-brand img { height: 26px; width: auto; }
+.lg-naam { font-weight: 600; font-size: 1.3rem; letter-spacing: -0.03em; color: #141414; }
+.lg-sub { font-weight: 500; font-size: .95rem; color: #666; padding-left: .65rem; border-left: 1px solid #E4E4E4; }
+.lg-link { margin-left: auto; font-size: .9rem; font-weight: 500; color: #666 !important; text-decoration: none; }
+.lg-link:hover { color: #141414 !important; }
+.lg-nabla { font-size: 1.7rem; line-height: 1; }
+.lg-naam, .lg-sub, .lg-link { white-space: nowrap; }
+@media (max-width: 575.98px) { .lg-sub, .lg-link { display: none; } }
+.bslib-page-title, .navbar { border-bottom: 1px solid #E4E4E4; }
+h1, h2, h3, .card-header, .accordion-button, .value-box-value, .nav-link { letter-spacing: -0.02em; }
+
+.card, .bslib-value-box { box-shadow: none !important; border: 1px solid #E4E4E4 !important; }
+.bslib-value-box.lg-ok { border-color: #141414 !important; }
+.card-header { background: transparent; font-weight: 600; color: #141414; border-bottom: 1px solid #E4E4E4; }
+.bslib-value-box .value-box-title { color: #666; font-weight: 500; font-size: .9rem; }
+.bslib-value-box .value-box-value { font-weight: 600; letter-spacing: -0.04em; }
+.bslib-value-box p { color: #666; margin-bottom: 0; }
+.bslib-value-box.lg-ok .value-box-title, .bslib-value-box.lg-ok p { color: rgba(255, 255, 255, .7); }
+.bslib-value-box.lg-fout .value-box-title, .bslib-value-box.lg-fout p { color: rgba(255, 255, 255, .85); }
+
+.accordion { --bs-accordion-bg: transparent; --bs-accordion-active-bg: transparent;
+             --bs-accordion-active-color: #141414; --bs-accordion-btn-focus-box-shadow: none;
+             --bs-accordion-border-color: #E4E4E4; }
+.accordion-button { font-weight: 600; }
+.lg-stap { display: inline-flex; align-items: center; justify-content: center; flex: none;
+           width: 1.6rem; height: 1.6rem; margin-right: .7rem; border: 1px solid #141414;
+           border-radius: 50%; font-size: .8rem; font-weight: 600; }
+.lg-stap.lg-zacht { border-color: #B5B5B5; color: #666; font-size: .7rem; }
+.lg-info { color: #9A9A9A; cursor: help; font-size: .85em; }
+.lg-scen { font-weight: 600; font-size: .9rem; }
+
+.form-label, .control-label { font-weight: 500; font-size: .9rem; }
+.form-control, .selectize-input { border-color: #E4E4E4; box-shadow: none; }
+.form-control:focus, .selectize-input.focus { border-color: #141414; box-shadow: 0 0 0 .15rem rgba(20, 20, 20, .08); }
+.btn { border-radius: 999px; font-weight: 500; letter-spacing: -0.01em; }
+
+.table { font-variant-numeric: tabular-nums; --bs-table-striped-bg: #F7F7F7; margin-bottom: 0; }
+.table thead th { color: #666; font-weight: 500; font-size: .85rem; border-bottom: 1px solid #141414; vertical-align: bottom; }
+.shiny-html-output table td:not(:first-child), .shiny-html-output table th:not(:first-child) { text-align: right; }
+.shiny-html-output table td:not(:first-child) { white-space: nowrap; }
+.nav-underline .nav-link { color: #666; }
+.nav-underline .nav-link.active { color: #141414; border-bottom-color: #141414; font-weight: 600; }
+.alert { border: none; border-radius: .75rem; }
+
+.lg-leeg { text-align: center; padding: 3.5rem 1rem; }
+.lg-leeg img { height: 46px; width: auto; margin: 0 auto 1.2rem; }
+.lg-leeg .lg-nabla { font-size: 3rem; display: block; margin-bottom: 1rem; }
+.lg-leeg h2 { font-size: 2.5rem; font-weight: 600; letter-spacing: -0.045em; margin-bottom: .6rem; }
+.lg-leeg p { color: #666; max-width: 34rem; margin: 0 auto; }
+.lg-voet { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem;
+           color: #666; font-size: .85rem; border-top: 1px solid #E4E4E4; padding-top: .9rem; margin-top: .5rem; }
+)"
+
+lg_thema <- bs_theme(
+  version = 5,
+  bg = "#FFFFFF", fg = lg$zwart,
+  primary = lg$zwart, secondary = lg$tekst2, danger = "#B42318",
+  base_font = lg_font, heading_font = lg_font,
+  "border-color" = lg$lijn,
+  "border-radius" = "0.75rem",
+  "headings-font-weight" = 600,
+  "headings-color" = lg$grijs,
+  "link-color" = lg$zwart
+) |>
+  bs_add_rules(lg_css)
+
+logo <- function(h = 26) {
+  if (file.exists("www/logo.png")) tags$img(src = "logo.png", alt = "Le Gradient", height = h)
+  else span(class = "lg-nabla", "∇")
+}
+
+stap <- function(teken, tekst, zacht = FALSE) {
+  tagList(span(class = if (zacht) "lg-stap lg-zacht" else "lg-stap", teken), tekst)
+}
+
+
 # ---- UI ----
 
 ui <- page_sidebar(
-  title = tags$span("Le Gradient", tags$small(class = "text-muted ms-2", "ETF engine · prototype")),
-  theme = bs_theme(version = 5, primary = "#0B3D91"),
+  title = div(class = "lg-brand", logo(), span(class = "lg-naam", "Le Gradient"), span(class = "lg-sub", "ETF engine"),
+              tags$a(class = "lg-link", href = "https://legradient.be", target = "_blank", rel = "noopener", "legradient.be ↗")),
+  window_title = "Le Gradient · ETF engine",
+  theme = lg_thema,
   fillable = FALSE,
   
   sidebar = sidebar(
     width = 390,
+    bg = lg$licht,
     accordion(
       id = "wizard", open = "ticker",
       
       accordion_panel(
-        "1 · Ticker", value = "ticker",
+        stap(1, "Ticker"), value = "ticker",
         textInput("ticker", info("Yahoo ticker", "Search the fund on finance.yahoo.com, e.g. QDVE.DE"), "QDVE.DE"),
         textInput("naam", "Fund name", "iShares S&P 500 Information Technology Sector"),
         dateInput("start", info("Price history from", "Leave at 2010-01-01 unless the fund is younger or the early data look odd."),
@@ -105,7 +193,7 @@ ui <- page_sidebar(
       ),
       
       accordion_panel(
-        "2 · Fund", value = "fonds",
+        stap(2, "Fund"), value = "fonds",
         selectInput("type", "Type", types),
         selectInput("sector", info("Sector", "Use ‘Diversified’ for a broad fund. Sector limits only apply to sector funds."), sectoren),
         numericInput("ter", info("Yearly cost, TER (%)", "On the factsheet. Type 0.15 for 0.15% a year."), 0.15, step = 0.01),
@@ -120,7 +208,7 @@ ui <- page_sidebar(
       ),
       
       accordion_panel(
-        "3 · Scenarios", value = "scen",
+        stap(3, "Scenarios"), value = "scen",
         conditionalPanel(
           "input.type == 'aandelen'",
           layout_columns(
@@ -159,7 +247,7 @@ ui <- page_sidebar(
       ),
       
       accordion_panel(
-        "Advanced", value = "adv",
+        stap(icon("sliders"), "Advanced", zacht = TRUE), value = "adv",
         numericInput("drempel", info("Drawdown threshold (%)", "Every fall at least this big is listed as an episode."),
                      100 * (club$drempel %||% 0.15), step = 1),
         selectInput("centrum", info("Centre of daily losses", "Zero is the cautious choice for one-day risk."),
@@ -174,7 +262,7 @@ ui <- page_sidebar(
       ),
       
       accordion_panel(
-        "Load / save inputs", value = "laden",
+        stap(icon("folder-open"), "Load / save inputs", zacht = TRUE), value = "laden",
         fileInput("upload", "Load inputs (.yml)", accept = c(".yml", ".yaml")),
         uiOutput("upload_kies"),
         helpText("Works with a file you saved here, and with config/club.yml itself."),
@@ -183,24 +271,23 @@ ui <- page_sidebar(
     ),
     
     input_task_button("run", "Run full model", label_busy = "Running the model…", class = "w-100"),
-    downloadButton("pdf", "Download PDF report", class = "btn-outline-primary w-100"),
-    tags$small(class = "text-muted", "Not investment advice. The engine is only as good as the numbers you put in.")
+    downloadButton("pdf", "Download PDF report", class = "btn-outline-primary w-100")
   ),
   
+  tags$head(tags$link(rel = "icon", type = "image/png", href = "logo.png")),
   uiOutput("vakken"),
   uiOutput("meldingen"),
   layout_columns(
-    col_widths = c(6, 6),
+    col_widths = c(6, 6), class = "mb-3",
     card(card_header("Live check · updates while you type"), tableOutput("live_tabel")),
     card(card_header("Club limits"), tableOutput("live_lim"))
   ),
   uiOutput("verouderd"),
   conditionalPanel(
     "!output.heeft_res",
-    card(card_header("Full model"),
-         p(class = "text-muted mb-0",
-           "Fill in the three steps on the left, then click “Run full model”. ",
-           "The charts and tables of the report appear here, and the PDF button starts working."))
+    card(class = "lg-leeg", logo(46), h2("Investing with direction."),
+         p(HTML("Fill in the three steps on the left and click <b>Run full model</b>. ",
+                "The charts and tables of the report appear here, and the PDF button starts working.")))
   ),
   conditionalPanel(
     "output.heeft_res",
@@ -214,9 +301,13 @@ ui <- page_sidebar(
       nav_panel("Backtest", uiOutput("bt_tekst"), tableOutput("t_bt")),
       nav_panel("Horizon risk", tableOutput("t_hor")),
       nav_panel("Compare", helpText("Every ETF you run in this session becomes a row here."),
-                tableOutput("t_vgl"), downloadButton("vgl_csv", "Download comparison (.csv)"))
+                tableOutput("t_vgl"),
+                div(downloadButton("vgl_csv", "Download comparison (.csv)", class = "btn-outline-primary btn-sm")))
     )
-  )
+  ),
+  div(class = "lg-voet",
+      span(paste0("© ", format(Sys.Date(), "%Y"), " Le Gradient · Ghent, Belgium")),
+      span("Not investment advice. The engine is only as good as the numbers you put in."))
 )
 
 
@@ -373,7 +464,7 @@ server <- function(input, output, session) {
     d <- koersdata()
     req(d, identical(d$ticker, ticker()))
     ggplot(data.frame(datum = index(d$px), p = as.numeric(d$px)), aes(datum, p)) +
-      geom_line(linewidth = 0.3, colour = "#0B3D91") +
+      geom_line(linewidth = 0.3, colour = lg$zwart) +
       labs(x = NULL, y = "EUR") +
       theme_minimal(base_size = 9)
   })
@@ -400,13 +491,14 @@ server <- function(input, output, session) {
     n <- sum(!is.na(l$lim$ok))
     n_ok <- sum(l$lim$ok, na.rm = TRUE)
     layout_columns(
-      fill = FALSE,
+      fill = FALSE, class = "mb-3",
       value_box("Expected return, base", pct(l$rs[["base"]]), paste("per year over", jaren(H))),
       value_box("Growth needed for 8% a year", pct(l$be8),
                 if (is.na(l$be8)) "equity funds only" else "profit growth the companies must deliver"),
       value_box("Club limits", paste(n_ok, "of", n, "OK"),
                 if (n_ok == n) "all rules respected at this position" else "a rule is broken: see Club limits",
-                theme = if (n_ok == n) "success" else "danger")
+                theme = if (n_ok == n) value_box_theme(bg = lg$zwart, fg = "#FFFFFF") else "danger",
+                class = if (n_ok == n) "lg-ok" else "lg-fout")
     )
   })
   
@@ -424,7 +516,7 @@ server <- function(input, output, session) {
     }
     d$`Expected return / year` <- pct(l$rs[scenarios])
     d
-  }, striped = TRUE, width = "100%", align = "l")
+  }, striped = TRUE, width = "100%")
   
   lim_tabel <- function(lim, lim30) {
     teken <- function(ok) ifelse(is.na(ok), "–", ifelse(ok, "✓", "✗"))
@@ -438,7 +530,7 @@ server <- function(input, output, session) {
   output$live_lim <- renderTable({
     l <- live()
     lim_tabel(l$lim, l$lim30)
-  }, striped = TRUE, width = "100%", align = "l")
+  }, striped = TRUE, width = "100%")
   
   
   # ---- volledig model: dure berekeningen, enkel op de knop ----
@@ -512,7 +604,7 @@ server <- function(input, output, session) {
     validate(need(nrow(ep) > 0, paste0("No fall of ", pct(res()$cfg$drempel, 0), " or more.")))
     data.frame(Peak = maand(as.Date(ep$top)), Bottom = maand(as.Date(ep$bodem)), Fall = pct(ep$daling),
                `Back at the peak` = maand(as.Date(ep$herstel)), check.names = FALSE)
-  }, striped = TRUE, align = "l")
+  }, striped = TRUE)
   
   output$t_mc <- renderTable({
     nog_niet(res())
@@ -521,7 +613,7 @@ server <- function(input, output, session) {
     data.frame(Scenario = c("Bear", "Base", "Bull"), `Return / year` = pct(res()$rs[scenarios]),
                P10 = eur(mc[scenarios, "p10"]), P50 = eur(mc[scenarios, "p50"]), P90 = eur(mc[scenarios, "p90"]),
                `Chance of a loss` = pct(mc[scenarios, "verlies"], 0), check.names = FALSE)
-  }, striped = TRUE, width = "100%", align = "l")
+  }, striped = TRUE, width = "100%")
   
   output$p_football <- renderPlot({
     nog_niet(res())
@@ -552,7 +644,7 @@ server <- function(input, output, session) {
     k <- function(x) paste0(pct(x, 2), " (", eur(res()$cfg$positie * x), ")")
     data.frame(Model = unname(modellen[rownames(r95)]), `VaR 95%` = k(r95[, "VaR"]), `ES 95%` = k(r95[, "ES"]),
                `VaR 99%` = k(r99[, "VaR"]), `ES 99%` = k(r99[, "ES"]), check.names = FALSE)
-  }, striped = TRUE, width = "100%", align = "l")
+  }, striped = TRUE, width = "100%")
   
   output$bt_tekst <- renderUI({
     nog_niet(res())
@@ -574,7 +666,7 @@ server <- function(input, output, session) {
                `ES ratio` = ifelse(is.na(bt$es_ratio), "–", formatC(bt$es_ratio, format = "f", digits = 2)),
                Verdict = ifelse(bt$p_kupiec > 0.05 & bt$p_indep > 0.05, "✓ holds", "✗ rejected"),
                check.names = FALSE)
-  }, striped = TRUE, width = "100%", align = "l")
+  }, striped = TRUE, width = "100%")
   
   output$t_hor <- renderTable({
     nog_niet(res())
@@ -585,7 +677,7 @@ server <- function(input, output, session) {
                `ES 95%` = c(pct(x$es1[["ES"]]), pct(x$esH[["ES"]])),
                `ES 95% in EUR` = c(eur(pos * x$es1[["ES"]]), eur(pos * x$esH[["ES"]])),
                check.names = FALSE)
-  }, striped = TRUE, width = "100%", align = "l")
+  }, striped = TRUE, width = "100%")
   
   vgl <- reactive({
     validate(need(length(runs()), "Run at least one ETF."))
@@ -599,7 +691,7 @@ server <- function(input, output, session) {
                `Worst fall` = pct(v$maxdd), `Expected, base` = pct(v$base),
                `Chance of loss after horizon` = pct(v$verlies_H, 0), `P10 after horizon` = eur(v$p10_H),
                `ES over horizon` = pct(v$esH), check.names = FALSE)
-  }, striped = TRUE, width = "100%", align = "l")
+  }, striped = TRUE, width = "100%")
   
   
   # ---- downloads ----
