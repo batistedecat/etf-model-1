@@ -45,7 +45,31 @@ lg_font <- font_collection(font_google("Instrument Sans", local = FALSE, wght = 
 lg_css <- r"(
 body { -webkit-font-smoothing: antialiased; }
 .navbar, .bslib-page-title { background: #0E0E10 !important; border-bottom: 1px solid #25252A; }
-.lg-brand { display: flex; align-items: center; gap: .6rem; width: 100%; }
+.lg-brand { display: flex; align-items: center; gap: .6rem; }
+.navbar { padding-top: 0; padding-bottom: 0; min-height: 56px; }
+.navbar > .container-fluid { align-items: center !important; }
+.navbar-brand { display: flex; align-items: center; padding: 0; margin-right: 2rem; }
+.navbar-nav .nav-link { padding-top: 1.05rem !important; padding-bottom: 1.05rem !important; }
+.navbar-toggle { border: 1px solid #2E2E34 !important; border-radius: 10px; padding: .3rem .45rem; background: transparent !important; }
+.navbar-toggle > .icon-bar:last-child { background-color: transparent !important; width: 1.4em; height: 1.4em; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23ECECEE' stroke-linecap='round' stroke-width='2' d='M5 8h20M5 15h20M5 22h20'/%3e%3c/svg%3e") !important; }
+@media (max-width: 767.98px) { .navbar-nav .nav-link { padding-top: .6rem !important; padding-bottom: .6rem !important; } }
+.navbar .nav-link { color: #8C8C94 !important; font-weight: 500; font-size: .92rem; }
+.navbar .nav-link:hover { color: #ECECEE !important; }
+.navbar .nav-link.active { color: #ECECEE !important; }
+
+.lg-pagina { max-width: 1240px; margin: 0 auto; padding: 2.5rem 1.5rem 3rem; }
+.lg-video { max-width: 880px; }
+.lg-titel { font-size: 2.2rem; font-weight: 600; letter-spacing: -0.04em; color: #ECECEE; margin-bottom: .4rem; }
+.lg-intro { color: #8C8C94; font-size: 1rem; margin-bottom: 1.6rem; }
+.lg-kop { font-size: 1.15rem; font-weight: 600; letter-spacing: -0.02em; color: #ECECEE; margin: 2.4rem 0 1rem; }
+.lg-video video { width: 100%; border-radius: 16px; border: 1px solid #25252A; background: #000; display: block; }
+.lg-pagina .lg-klein { color: #5E5E66; font-size: .85rem; margin-top: .6rem; }
+.lg-pagina .lg-klein a { color: #8C8C94; margin-left: .3rem; }
+.lg-flow { background: #151518; border: 1px solid #25252A; border-radius: 16px; padding: 1.25rem; overflow-x: auto; }
+.lg-mermaid { margin: 0; background: transparent; color: #5E5E66; font-size: .8rem; white-space: pre; }
+.lg-mermaid[data-processed] { white-space: normal; text-align: center; }
+.lg-mermaid svg { max-width: 100% !important; height: auto; }
+.lg-legende { color: #8C8C94; font-size: .85rem; margin-top: .8rem; }
 .lg-brand img { height: 22px; width: auto; filter: invert(1); }
 .lg-naam { font-weight: 600; font-size: 1.15rem; letter-spacing: -0.03em; color: #ECECEE; white-space: nowrap; }
 .lg-sub { font-size: .9rem; color: #8C8C94; padding-left: .6rem; border-left: 1px solid #25252A; white-space: nowrap; }
@@ -313,133 +337,211 @@ plot_dag <- function(r, positie, var95, es95) {
 }
 
 
+# ---- uitlegpagina: flowchart en video uit README.md ----
+
+readme <- if (file.exists("README.md")) readLines("README.md", warn = FALSE, encoding = "UTF-8") else character()
+
+mermaid_code <- local({
+  start <- grep("^```mermaid", readme)[1]
+  eind <- if (is.na(start)) NA else which(grepl("^```\\s*$", readme) & seq_along(readme) > start)[1]
+  if (is.na(start) || is.na(eind)) NULL else paste(readme[(start + 1):(eind - 1)], collapse = "\n")
+})
+
+video_bron <- local({
+  if (file.exists("www/uitleg.mp4")) return("uitleg.mp4")
+  m <- regmatches(readme, regexpr("https://github\\.com/user-attachments/assets/[A-Za-z0-9-]+", readme))
+  if (length(m)) m[1] else NULL
+})
+
+mermaid_js <- tagList(
+  tags$script(src = "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"),
+  tags$script(HTML(r"(
+document.addEventListener('DOMContentLoaded', function () {
+  if (!window.mermaid) return;
+  mermaid.initialize({
+    startOnLoad: false, theme: 'base', securityLevel: 'strict',
+    fontFamily: 'Instrument Sans, Inter, system-ui, sans-serif',
+    themeVariables: {
+      background: 'transparent', primaryColor: '#18181C', primaryTextColor: '#ECECEE',
+      primaryBorderColor: '#3A3A41', lineColor: '#6A6A72', secondaryColor: '#151518', tertiaryColor: '#151518',
+      clusterBkg: '#121215', clusterBorder: '#25252A', titleColor: '#8C8C94',
+      edgeLabelBackground: '#151518', fontSize: '17px'
+    },
+    flowchart: { curve: 'basis', padding: 10, nodeSpacing: 22, rankSpacing: 34 }
+  });
+});
+$(document).on('shown.bs.tab', 'a[data-value="uitleg"]', function () {
+  if (!window.mermaid) return;
+  document.fonts.ready.then(function () {
+    mermaid.run({ querySelector: '.lg-mermaid:not([data-processed])' });
+  });
+});
+)"))
+)
+
+uitleg_pagina <- div(
+  class = "lg-pagina",
+  h2(class = "lg-titel", "How it works"),
+  p(class = "lg-intro", "From a ticker and a few assumptions to a full risk report. Watch the walkthrough, then follow the flow."),
+  if (!is.null(video_bron)) {
+    div(class = "lg-video", tags$video(src = video_bron, controls = NA, preload = "metadata", playsinline = NA))
+  },
+  if (!is.null(video_bron) && !identical(video_bron, "uitleg.mp4")) {
+    p(class = "lg-klein", "Video not playing?",
+      tags$a(href = "https://github.com/batistedecat/etf-model-1#readme", target = "_blank", rel = "noopener",
+             "Watch it on GitHub ↗"))
+  },
+  h3(class = "lg-kop", "The flow"),
+  if (is.null(mermaid_code)) {
+    p(class = "lg-klein", "No flowchart found in README.md.")
+  } else {
+    div(class = "lg-flow", tags$pre(class = "lg-mermaid", mermaid_code))
+  },
+  p(class = "lg-legende",
+    "px = prices · r = daily log-returns · vol = volatility. Every step lives in its own file in R/, and rapport.Rmd turns the result into the PDF.")
+)
+
+
 # ---- UI ----
 
-ui <- page_sidebar(
-  title = div(class = "lg-brand", logo(), span(class = "lg-naam", "Le Gradient"), span(class = "lg-sub", "ETF engine"),
-              tags$a(class = "lg-link", href = "https://legradient.be", target = "_blank", rel = "noopener", "legradient.be ↗")),
-  window_title = "Le Gradient · Analyzer",
+ui <- page_navbar(
+  title = div(class = "lg-brand", logo(), span(class = "lg-naam", "Le Gradient"), span(class = "lg-sub", "ETF engine")),
+  id = "pagina",
+  window_title = "Le Gradient · ETF engine",
   theme = lg_thema,
-  fillable = FALSE,
+  fillable = "analyse",
+  navbar_options = navbar_options(bg = kleur$bg, theme = "dark"),
+  header = tagList(tags$head(tags$link(rel = "icon", type = "image/png", href = "logo.png")), mermaid_js),
   
-  sidebar = sidebar(
-    width = 360,
-    bg = kleur$zijbalk,
-    open = list(desktop = "open", mobile = "always-above"),
-    accordion(
-      id = "wizard", open = "ticker",
+  nav_panel(
+    "Analysis", value = "analyse",
+    layout_sidebar(
+      fillable = FALSE,
+      border = FALSE,
       
-      accordion_panel(
-        stap(1, "Ticker"), value = "ticker",
-        textInput("ticker", info("Yahoo ticker", "Search the fund on finance.yahoo.com, e.g. QDVE.DE"), "QDVE.DE"),
-        textInput("naam", "Fund name", "iShares S&P 500 Information Technology Sector"),
-        dateInput("start", info("Price history from", "Leave at 2010-01-01 unless the fund is younger or the early data look odd."),
-                  "2010-01-01"),
-        actionButton("check", "Check ticker", class = "btn-outline-light w-100"),
-        uiOutput("ticker_status")
+      sidebar = sidebar(
+        width = 360,
+        bg = kleur$zijbalk,
+        open = list(desktop = "open", mobile = "always-above"),
+        accordion(
+          id = "wizard", open = "ticker",
+          
+          accordion_panel(
+            stap(1, "Ticker"), value = "ticker",
+            textInput("ticker", info("Yahoo ticker", "Search the fund on finance.yahoo.com, e.g. QDVE.DE"), "QDVE.DE"),
+            textInput("naam", "Fund name", "iShares S&P 500 Information Technology Sector"),
+            dateInput("start", info("Price history from", "Leave at 2010-01-01 unless the fund is younger or the early data look odd."),
+                      "2010-01-01"),
+            actionButton("check", "Check ticker", class = "btn-outline-light w-100"),
+            uiOutput("ticker_status")
+          ),
+          
+          accordion_panel(
+            stap(2, "Fund"), value = "fonds",
+            selectInput("type", "Type", types),
+            selectInput("sector", info("Sector", "Use ‘Diversified’ for a broad fund. Sector limits only apply to sector funds."), sectoren),
+            numericInput("ter", info("Yearly cost, TER (%)", "On the factsheet. Type 0.15 for 0.15% a year."), 0.15, step = 0.01),
+            conditionalPanel(
+              "input.type == 'aandelen'",
+              numericInput("top", info("Biggest holding (%)", "Holdings tab on the fund's website, or justETF."), 21.1, step = 0.1)
+            ),
+            numericInput("positie", info("Position (EUR)", "How much we would put in this ETF."), club$positie, step = 100),
+            div(class = "small text-secondary",
+                paste0("Portfolio ", eur(club$portefeuille), " · cash ", eur(club$cash), " · horizon ", jaren(H),
+                       ". Set in config/club.yml."))
+          ),
+          
+          accordion_panel(
+            stap(3, "Scenarios"), value = "scen",
+            conditionalPanel(
+              "input.type == 'aandelen'",
+              layout_columns(
+                col_widths = c(6, 6),
+                numericInput("pe0", info("P/E today", "FactSet Earnings Insight or the factsheet."), 22, step = 0.1),
+                numericInput("dy", info("Dividend yield (%)", "On the factsheet. Type 0.6 for 0.6%."), 0.6, step = 0.1)
+              ),
+              scen_kop("Growth (%/yr)", paste0("P/E after ", H, "y")),
+              scen_rij("Bear", c("g_bear", "peH_bear"), c(5, 20.9), c(0.5, 0.1)),
+              scen_rij("Base", c("g_base", "peH_base"), c(12, 21.6), c(0.5, 0.1)),
+              scen_rij("Bull", c("g_bull", "peH_bull"), c(18, 22), c(0.5, 0.1))
+            ),
+            conditionalPanel(
+              "input.type == 'obligaties'",
+              layout_columns(
+                col_widths = c(6, 6),
+                numericInput("ytm", info("Yield (%)", "Yield to maturity, on the factsheet."), 3.94, step = 0.01),
+                numericInput("duration", info("Duration (yrs)", "On the factsheet."), 5.95, step = 0.05)
+              ),
+              scen_kop("Rate change (%-points)"),
+              scen_rij("Bear", "dr_bear", 2, 0.25),
+              scen_rij("Base", "dr_base", 0, 0.25),
+              scen_rij("Bull", "dr_bull", -1, 0.25)
+            ),
+            conditionalPanel(
+              "input.type == 'overig'",
+              scen_kop("Return (%/yr)"),
+              scen_rij("Bear", "ov_bear", -2, 0.5),
+              scen_rij("Base", "ov_base", 3, 0.5),
+              scen_rij("Bull", "ov_bull", 7, 0.5)
+            )
+          ),
+          
+          accordion_panel(
+            stap(icon("sliders"), "Advanced", zacht = TRUE), value = "adv",
+            numericInput("drempel", info("Drawdown threshold (%)", "Every fall at least this big counts as an episode."),
+                         100 * (club$drempel %||% 0.15), step = 1),
+            selectInput("centrum", info("Centre of daily losses", "Zero is the cautious choice for one-day risk."),
+                        c("Zero" = "nul", "Estimated mean" = "geschat"), club$centrum %||% "nul"),
+            numericInput("stappen", info("Simulation steps per year", "52 = weekly steps."), club$stappen %||% 52, step = 1),
+            layout_columns(
+              col_widths = c(4, 4, 4),
+              numericInput("min_test", "Min. test", club$min_test %||% 750, step = 50),
+              numericInput("min_train", "Min. train", club$min_train %||% 1000, step = 50),
+              numericInput("frac_test", "Test %", 100 * (club$frac_test %||% 0.3), step = 5)
+            )
+          ),
+          
+          accordion_panel(
+            stap(icon("folder-open"), "Load / save", zacht = TRUE), value = "laden",
+            fileInput("upload", "Load inputs (.yml)", accept = c(".yml", ".yaml")),
+            uiOutput("upload_kies"),
+            downloadButton("yml", "Save inputs (.yml)", class = "btn-outline-light btn-sm w-100")
+          )
+        ),
+        
+        uiOutput("meldingen"),
+        input_task_button("run", "Run model", label_busy = "Running…", class = "w-100"),
+        uiOutput("pdf_knop")
       ),
       
-      accordion_panel(
-        stap(2, "Fund"), value = "fonds",
-        selectInput("type", "Type", types),
-        selectInput("sector", info("Sector", "Use ‘Diversified’ for a broad fund. Sector limits only apply to sector funds."), sectoren),
-        numericInput("ter", info("Yearly cost, TER (%)", "On the factsheet. Type 0.15 for 0.15% a year."), 0.15, step = 0.01),
-        conditionalPanel(
-          "input.type == 'aandelen'",
-          numericInput("top", info("Biggest holding (%)", "Holdings tab on the fund's website, or justETF."), 21.1, step = 0.1)
-        ),
-        numericInput("positie", info("Position (EUR)", "How much we would put in this ETF."), club$positie, step = 100),
-        div(class = "small text-secondary",
-            paste0("Portfolio ", eur(club$portefeuille), " · cash ", eur(club$cash), " · horizon ", jaren(H),
-                   ". Set in config/club.yml."))
+      uiOutput("kern"),
+      uiOutput("verouderd"),
+      conditionalPanel(
+        "!output.heeft_res",
+        div(class = "lg-leeg", logo(30), p("Fill in the steps on the left and press Run model."),
+            p(class = "lg-klein", "The full analysis appears here, section by section."))
       ),
-      
-      accordion_panel(
-        stap(3, "Scenarios"), value = "scen",
-        conditionalPanel(
-          "input.type == 'aandelen'",
-          layout_columns(
-            col_widths = c(6, 6),
-            numericInput("pe0", info("P/E today", "FactSet Earnings Insight or the factsheet."), 22, step = 0.1),
-            numericInput("dy", info("Dividend yield (%)", "On the factsheet. Type 0.6 for 0.6%."), 0.6, step = 0.1)
-          ),
-          scen_kop("Growth (%/yr)", paste0("P/E after ", H, "y")),
-          scen_rij("Bear", c("g_bear", "peH_bear"), c(5, 20.9), c(0.5, 0.1)),
-          scen_rij("Base", c("g_base", "peH_base"), c(12, 21.6), c(0.5, 0.1)),
-          scen_rij("Bull", c("g_bull", "peH_bull"), c(18, 22), c(0.5, 0.1))
-        ),
-        conditionalPanel(
-          "input.type == 'obligaties'",
-          layout_columns(
-            col_widths = c(6, 6),
-            numericInput("ytm", info("Yield (%)", "Yield to maturity, on the factsheet."), 3.94, step = 0.01),
-            numericInput("duration", info("Duration (yrs)", "On the factsheet."), 5.95, step = 0.05)
-          ),
-          scen_kop("Rate change (%-points)"),
-          scen_rij("Bear", "dr_bear", 2, 0.25),
-          scen_rij("Base", "dr_base", 0, 0.25),
-          scen_rij("Bull", "dr_bull", -1, 0.25)
-        ),
-        conditionalPanel(
-          "input.type == 'overig'",
-          scen_kop("Return (%/yr)"),
-          scen_rij("Bear", "ov_bear", -2, 0.5),
-          scen_rij("Base", "ov_base", 3, 0.5),
-          scen_rij("Bull", "ov_bull", 7, 0.5)
+      conditionalPanel(
+        "output.heeft_res",
+        navset_card_underline(
+          id = "secties",
+          nav_panel("History", uiOutput("s_hist_stats"), plotOutput("p_hist", height = 360), uiOutput("s_hist_uitleg")),
+          nav_panel("Outlook", plotOutput("p_waaier", height = 300), tabel("t_mc"), uiOutput("s_out_uitleg")),
+          nav_panel("Daily risk", plotOutput("p_dag", height = 210), tabel("t_dag"), uiOutput("s_dag_uitleg")),
+          nav_panel("Backtest", uiOutput("s_bt_zin"), tabel("t_bt"), uiOutput("s_bt_uitleg")),
+          nav_panel("Horizon", uiOutput("s_hor_stats"), uiOutput("s_hor_uitleg")),
+          nav_panel("Club limits", tabel("t_lim"), uiOutput("s_lim_uitleg"))
         )
       ),
-      
-      accordion_panel(
-        stap(icon("sliders"), "Advanced", zacht = TRUE), value = "adv",
-        numericInput("drempel", info("Drawdown threshold (%)", "Every fall at least this big counts as an episode."),
-                     100 * (club$drempel %||% 0.15), step = 1),
-        selectInput("centrum", info("Centre of daily losses", "Zero is the cautious choice for one-day risk."),
-                    c("Zero" = "nul", "Estimated mean" = "geschat"), club$centrum %||% "nul"),
-        numericInput("stappen", info("Simulation steps per year", "52 = weekly steps."), club$stappen %||% 52, step = 1),
-        layout_columns(
-          col_widths = c(4, 4, 4),
-          numericInput("min_test", "Min. test", club$min_test %||% 750, step = 50),
-          numericInput("min_train", "Min. train", club$min_train %||% 1000, step = 50),
-          numericInput("frac_test", "Test %", 100 * (club$frac_test %||% 0.3), step = 5)
-        )
-      ),
-      
-      accordion_panel(
-        stap(icon("folder-open"), "Load / save", zacht = TRUE), value = "laden",
-        fileInput("upload", "Load inputs (.yml)", accept = c(".yml", ".yaml")),
-        uiOutput("upload_kies"),
-        downloadButton("yml", "Save inputs (.yml)", class = "btn-outline-light btn-sm w-100")
-      )
-    ),
-    
-    uiOutput("meldingen"),
-    input_task_button("run", "Run model", label_busy = "Running…", class = "w-100"),
-    uiOutput("pdf_knop")
-  ),
-  
-  tags$head(tags$link(rel = "icon", type = "image/png", href = "logo.png")),
-  uiOutput("kern"),
-  uiOutput("verouderd"),
-  conditionalPanel(
-    "!output.heeft_res",
-    div(class = "lg-leeg", logo(30), p("Fill in the steps on the left and press Run model."),
-        p(class = "lg-klein", "The full analysis appears here, section by section."))
-  ),
-  conditionalPanel(
-    "output.heeft_res",
-    navset_card_underline(
-      id = "secties",
-      nav_panel("History", uiOutput("s_hist_stats"), plotOutput("p_hist", height = 360), uiOutput("s_hist_uitleg")),
-      nav_panel("Outlook", plotOutput("p_waaier", height = 300), tabel("t_mc"), uiOutput("s_out_uitleg")),
-      nav_panel("Daily risk", plotOutput("p_dag", height = 210), tabel("t_dag"), uiOutput("s_dag_uitleg")),
-      nav_panel("Backtest", uiOutput("s_bt_zin"), tabel("t_bt"), uiOutput("s_bt_uitleg")),
-      nav_panel("Horizon", uiOutput("s_hor_stats"), uiOutput("s_hor_uitleg")),
-      nav_panel("Club limits", tabel("t_lim"), uiOutput("s_lim_uitleg"))
+      div(class = "lg-voet",
+          span(paste0("© ", format(Sys.Date(), "%Y"), " Le Gradient · Ghent")),
+          span("Not investment advice. The engine is only as good as the numbers you put in."))
     )
   ),
-  div(class = "lg-voet",
-      span(paste0("© ", format(Sys.Date(), "%Y"), " Le Gradient · Ghent")),
-      span("Not investment advice. The engine is only as good as the numbers you put in."))
+  
+  nav_panel("How it works", value = "uitleg", uitleg_pagina),
+  nav_spacer(),
+  nav_item(tags$a(class = "lg-link", href = "https://legradient.be", target = "_blank", rel = "noopener", "legradient.be ↗"))
 )
 
 
