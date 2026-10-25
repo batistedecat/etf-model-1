@@ -506,8 +506,9 @@ wiskunde_pagina <- div(
         r"-(<p>Every scenario gets its own growth and end-P/E. The P/E change is spread over the horizon with the \(1/H\) power, and growth and repricing multiply instead of add, so it stays exact over several years. Solve the same formula for \(g\) and you get the break-even: the profit growth we need for 8% a year. Bonds use the duration formula below instead.</p>)-"),
       uiOutput("gk_live"),
       grenzen("The inputs are guesses", "Over 1–2 years the P/E change dominates", "No term for buybacks or new shares", "Says nothing about the path, only the trend"),
-      lees(bron("Grinold–Kroner model (Wikipedia)", "https://en.wikipedia.org/wiki/Grinold_and_Kroner_Model"),
-           bron("Grinold, Kroner & Siegel in Rethinking the Equity Risk Premium (CFA Institute, 2011)", "https://rpc.cfainstitute.org/research/foundation/2011/rethinking-the-equity-risk-premium"))),
+      lees(bron("Grinold, Kroner & Siegel (2011), A Supply Model of the Equity Premium (free PDF, CFA Institute)",
+                "https://rpc.cfainstitute.org/-/media/documents/book/rf-publication/2011/rf-v2011-n4-full-pdf.pdf#page=59"),
+           bron("Grinold–Kroner model (Wikipedia)", "https://en.wikipedia.org/wiki/Grinold_and_Kroner_Model"))),
   
   div(class = "lg-kaart-model",
       div(class = "lg-kicker", "02 · Price model"),
@@ -522,8 +523,9 @@ wiskunde_pagina <- div(
         r"-(<p>\(\mu = \ln(1 + \mathbb{E}[R])\) for each scenario, so the average path grows exactly at the Grinold–Kroner forecast. \(\sigma\) is the asset's historic volatility: the yearly standard deviation of its daily log-returns. We move in weekly steps (\(\Delta t = 1/52\)).</p>)-"),
       plotOutput("p_gbm_demo", height = 260),
       grenzen("Constant volatility: no calm vs. stormy periods", "Normal shocks: real crashes are more frequent", "No jumps or overnight gaps", "Drift fixed per scenario"),
-      lees(bron("Osborne (1959), Brownian Motion in the Stock Market", "https://doi.org/10.1287/opre.7.2.145"),
-           bron("Black & Scholes (1973), The Pricing of Options and Corporate Liabilities", "https://doi.org/10.1086/260062"))),
+      lees(bron("Sigman (2012), Geometric Brownian motion: lecture notes (free PDF, Columbia)", "https://columbia.edu/~ks20/4404-16-Fall/Notes-GBM.pdf"),
+           bron("Bachelier (1900), Théorie de la spéculation: the original, in French (Numdam)", "https://www.numdam.org/item/ASENS_1900_3_17__21_0/"),
+           bron("Geometric Brownian motion (Wikipedia)", "https://en.wikipedia.org/wiki/Geometric_Brownian_motion"))),
   
   div(class = "lg-kaart-model",
       div(class = "lg-kicker", "03 · Simulation"),
@@ -537,8 +539,8 @@ wiskunde_pagina <- div(
         r"-(<p>10,000 GBM paths per scenario, weekly steps, and the same random seed every run, so the results are reproducible. With \(N = 10{,}000\) the standard error on a probability is at most 0.5 percentage points. A "35% chance of a loss" is precise to about \(\pm 1\) point.</p>)-"),
       plotOutput("p_mc_demo", height = 240),
       grenzen("Only as good as the model it runs", "Removes counting noise, not model error", "Bad inputs in, bad odds out"),
-      lees(bron("Metropolis & Ulam (1949), The Monte Carlo Method", "https://doi.org/10.1080/01621459.1949.10483310"),
-           bron("Boyle (1977), Options: A Monte Carlo Approach", "https://doi.org/10.1016/0304-405X(77)90005-8"))),
+      lees(bron("Metropolis (1987), The Beginning of the Monte Carlo Method (free PDF, Los Alamos)", "https://mcnpx.lanl.gov/pdf_files/Article_1987_LAS_Metropolis_125--130.pdf"),
+           bron("Owen, Monte Carlo theory, methods and examples (free online book)", "https://artowen.su.domains/mc/"))),
   
   h3(class = "lg-kop", "Also under the hood"),
   div(class = "lg-onder",
@@ -546,17 +548,17 @@ wiskunde_pagina <- div(
           h4("Student-t VaR & ES"),
           formule(r"-(\begin{aligned} \text{VaR}_\alpha &= m + s\,q \\ \text{ES}_\alpha &= m + s\,\frac{f_\nu(q)}{1-\alpha}\cdot\frac{\nu + q^2}{\nu - 1} \end{aligned})-"),
           HTML(r"-(<p>With \(q = t_\nu^{-1}(\alpha)\). The worst loss on 1 day in 20, and the average loss on those days, from a bell-curve with fat tails. A low \(\nu\) means fatter tails.</p>)-"),
-          lees(bron("Acerbi & Tasche (2002)", "https://doi.org/10.1016/S0378-4266(02)00283-2"))),
+          lees(bron("Acerbi & Tasche (2002), arXiv", "https://arxiv.org/abs/cond-mat/0104295"))),
       div(class = "lg-mini-kaart",
           h4("Kupiec backtest"),
           formule(r"-(\begin{aligned} LR &= -2\ln\!\big[(1-p)^{n-x}p^{x}\big] \\ &\quad + 2\ln\!\big[(1-\hat p)^{n-x}\hat p^{\,x}\big] \sim \chi^2_1 \end{aligned})-"),
-          HTML(r"-(<p>With \(\hat p = x/n\). Did the loss go past VaR about as often as promised? \(x\) = days over VaR, \(n\) = test days, \(p = 1 - \alpha\).</p>)-"),
-          lees(bron("Kupiec (1995)", "https://fedinprint.org/item/fedgfe/34596/original"))),
+          HTML(r"-(<p>With \(\hat p = x/n\). Did the loss go past VaR about as often as promised? \(x\) = days over VaR, \(n\) = test days, \(p = 1 - \alpha\). We skip the clustering test on purpose: real returns come in calm and stormy spells, so it would fail anyway.</p>)-"),
+          lees(bron("Kupiec (1995), Fed working paper", "https://fedinprint.org/item/fedgfe/34596/original"))),
       div(class = "lg-mini-kaart",
           h4("Bond return (duration)"),
           formule(r"-(\mathbb{E}[R] \approx y - \text{TER} + \Delta y\,\frac{H - D}{H})-"),
           HTML(r"-(<p>A rate rise \(\Delta y\) hurts the price now, through the duration \(D\). But you reinvest at the higher yield for \(H\) years. If \(H = D\), the two cancel out.</p>)-"),
-          lees(bron("Fisher & Weil (1971)", "https://ideas.repec.org/a/ucp/jnlbus/v44y1971i4p408-31.html"))))
+          lees(bron("Immunization: the idea behind it (Wikipedia)", "https://en.wikipedia.org/wiki/Immunization_(finance)"))))
 )
 
 
@@ -1071,7 +1073,7 @@ server <- function(input, output, session) {
     uitleg(
       "We fitted each risk model on older data and checked it on recent days it had never seen.",
       "A model holds when the number of days the loss went past its VaR is close to what it promised (Kupiec count test, p ≥ 0.05).",
-      "The verdict only counts the bad days. It ignores whether they come in clusters, which they often do: the model uses one fixed volatility, so it can't raise its guard when markets get nervous."
+      "We don't test for clustering on purpose. Real returns come in calm and stormy spells, so bad days follow each other. A model with one fixed volatility fails that test almost by definition, so it would tell us nothing new."
     )
   })
   
