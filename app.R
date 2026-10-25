@@ -318,7 +318,7 @@ plot_dag <- function(r, positie, var95, es95) {
 ui <- page_sidebar(
   title = div(class = "lg-brand", logo(), span(class = "lg-naam", "Le Gradient"), span(class = "lg-sub", "ETF engine"),
               tags$a(class = "lg-link", href = "https://legradient.be", target = "_blank", rel = "noopener", "legradient.be ↗")),
-  window_title = "Le Gradient · ETF engine",
+  window_title = "Le Gradient · Analyzer",
   theme = lg_thema,
   fillable = FALSE,
   
