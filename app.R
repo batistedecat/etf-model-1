@@ -1,4 +1,4 @@
-# Le Gradient · ETF engine — Shiny app (donkere versie)
+# Le Gradient · Analyser — Shiny app (donkere versie)
 # Zet dit bestand in de root van etf-model-1 (naast run_all.R), logo in www/logo.png, start met shiny::runApp()
 # Past geen bestaand bestand aan: gebruikt de engine (R/*.R) en rapport.Rmd zoals ze zijn.
 
@@ -21,8 +21,8 @@ club <- yaml::read_yaml("config/club.yml", eval.expr = FALSE)$algemeen
 H <- club$horizon
 
 scenarios <- c("bear", "base", "bull")
-types <- c("Equity fund" = "aandelen", "Bond fund" = "obligaties", "Other (e.g. gold)" = "overig")
-sectoren <- c("Technology" = "technologie", "Diversified (broad fund)" = "gespreid", "Bonds" = "obligaties",
+types <- c("Equity (stock or fund)" = "aandelen", "Bonds (bond fund)" = "obligaties", "Other (e.g. gold)" = "overig")
+sectoren <- c("Technology" = "technologie", "Diversified (broad index)" = "gespreid", "Bonds" = "obligaties",
               "Commodities" = "grondstoffen", "Healthcare" = "gezondheidszorg", "Financials" = "financieel",
               "Energy" = "energie", "Real estate" = "vastgoed")
 modellen <- c(empirisch = "Empirical", normaal = "Normal", student_t = "Student-t")
@@ -48,11 +48,12 @@ body { -webkit-font-smoothing: antialiased; }
 .lg-brand { display: flex; align-items: center; gap: .6rem; }
 .navbar { padding-top: 0; padding-bottom: 0; min-height: 56px; }
 .navbar > .container-fluid { align-items: center !important; }
-.navbar-brand { display: flex; align-items: center; padding: 0; margin-right: 2rem; }
-.navbar-nav .nav-link { padding-top: 1.05rem !important; padding-bottom: 1.05rem !important; }
+.navbar-brand { display: flex; align-items: center; height: 56px; padding: 0; margin-right: 2rem; }
+.navbar-nav .nav-link { padding-top: 0 !important; padding-bottom: 0 !important; margin-bottom: 0 !important; line-height: 54px; }
+.navbar-nav .lg-link { display: block; line-height: 54px; }
 .navbar-toggle { border: 1px solid #2E2E34 !important; border-radius: 10px; padding: .3rem .45rem; background: transparent !important; }
 .navbar-toggle > .icon-bar:last-child { background-color: transparent !important; width: 1.4em; height: 1.4em; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23ECECEE' stroke-linecap='round' stroke-width='2' d='M5 8h20M5 15h20M5 22h20'/%3e%3c/svg%3e") !important; }
-@media (max-width: 767.98px) { .navbar-nav .nav-link { padding-top: .6rem !important; padding-bottom: .6rem !important; } }
+@media (max-width: 767.98px) { .navbar-nav .nav-link, .navbar-nav .lg-link { line-height: 2.6rem; } }
 .navbar .nav-link { color: #8C8C94 !important; font-weight: 500; font-size: .92rem; }
 .navbar .nav-link:hover { color: #ECECEE !important; }
 .navbar .nav-link.active { color: #ECECEE !important; }
@@ -405,9 +406,9 @@ uitleg_pagina <- div(
 # ---- UI ----
 
 ui <- page_navbar(
-  title = div(class = "lg-brand", logo(), span(class = "lg-naam", "Le Gradient"), span(class = "lg-sub", "ETF engine")),
+  title = div(class = "lg-brand", logo(), span(class = "lg-naam", "Le Gradient"), span(class = "lg-sub", "Analyser")),
   id = "pagina",
-  window_title = "Le Gradient · ETF engine",
+  window_title = "Le Gradient · Analyser",
   theme = lg_thema,
   fillable = "analyse",
   navbar_options = navbar_options(bg = kleur$bg, theme = "dark"),
@@ -428,24 +429,24 @@ ui <- page_navbar(
           
           accordion_panel(
             stap(1, "Ticker"), value = "ticker",
-            textInput("ticker", info("Yahoo ticker", "Search the fund on finance.yahoo.com, e.g. QDVE.DE"), "QDVE.DE"),
-            textInput("naam", "Fund name", "iShares S&P 500 Information Technology Sector"),
-            dateInput("start", info("Price history from", "Leave at 2010-01-01 unless the fund is younger or the early data look odd."),
+            textInput("ticker", info("Yahoo ticker", "Search it on finance.yahoo.com, e.g. QDVE.DE for an ETF or AAPL for a stock."), "QDVE.DE"),
+            textInput("naam", "Name", "iShares S&P 500 Information Technology Sector"),
+            dateInput("start", info("Price history from", "Leave at 2010-01-01 unless the asset is younger or the early data look odd."),
                       "2010-01-01"),
             actionButton("check", "Check ticker", class = "btn-outline-light w-100"),
             uiOutput("ticker_status")
           ),
           
           accordion_panel(
-            stap(2, "Fund"), value = "fonds",
+            stap(2, "Asset"), value = "fonds",
             selectInput("type", "Type", types),
-            selectInput("sector", info("Sector", "Use ‘Diversified’ for a broad fund. Sector limits only apply to sector funds."), sectoren),
-            numericInput("ter", info("Yearly cost, TER (%)", "On the factsheet. Type 0.15 for 0.15% a year."), 0.15, step = 0.01),
+            selectInput("sector", info("Sector", "Pick the sector of the stock or sector fund. Use ‘Diversified’ for a broad index: sector limits don't apply to it."), sectoren),
+            numericInput("ter", info("Yearly cost, TER (%)", "For a fund: on the factsheet, type 0.15 for 0.15% a year. For a single stock: 0."), 0.15, step = 0.01),
             conditionalPanel(
               "input.type == 'aandelen'",
-              numericInput("top", info("Biggest holding (%)", "Holdings tab on the fund's website, or justETF."), 21.1, step = 0.1)
+              numericInput("top", info("Biggest holding (%)", "For a fund: holdings tab on the website, or justETF. For a single stock: 100."), 21.1, step = 0.1)
             ),
-            numericInput("positie", info("Position (EUR)", "How much we would put in this ETF."), club$positie, step = 100),
+            numericInput("positie", info("Position (EUR)", "How much we would put in this asset."), club$positie, step = 100),
             div(class = "small text-secondary",
                 paste0("Portfolio ", eur(club$portefeuille), " · cash ", eur(club$cash), " · horizon ", jaren(H),
                        ". Set in config/club.yml."))
@@ -605,7 +606,7 @@ server <- function(input, output, session) {
     if (length(leeg)) return(list(fout = paste("Missing:", paste(nodig[leeg], collapse = ", ")), let = let))
     
     if (!ticker_ok(ticker())) fout <- c(fout, "Ticker: use the Yahoo code, e.g. QDVE.DE.")
-    if (!nzchar(schoon(input$naam))) fout <- c(fout, "Give the fund a name.")
+    if (!nzchar(schoon(input$naam))) fout <- c(fout, "Give it a name.")
     if (!identical(schoon(input$naam), trimws(input$naam))) let <- c(let, "Special characters were removed from the name.")
     if (length(input$start) == 0 || is.na(input$start) || input$start > Sys.Date() - 30) {
       fout <- c(fout, "The price history must start at least a month ago.")
@@ -821,7 +822,7 @@ server <- function(input, output, session) {
   output$p_waaier <- renderPlot({
     x <- res()
     req(x)
-    validate(need(x$mc, "No scenarios for this fund, so no simulation."))
+    validate(need(x$mc, "No scenarios for this asset, so no simulation."))
     plot_waaier(x$rs, x$hist$vol, x$cfg$positie, x$cfg$horizon, x$cfg$stappen %||% 52)
   }, bg = "transparent")
   
@@ -844,7 +845,7 @@ server <- function(input, output, session) {
     uitleg(
       paste0("10,000 simulated paths of ", eur(x$cfg$positie), " over ", jaren(x$cfg$horizon),
              ". Lines: the middle outcome per scenario. Band: 80% of the base-case paths. Dashed: what we put in."),
-      paste0(hoe, " The simulation adds the fund's historic volatility (", pct(x$hist$vol), ") around that trend. ",
+      paste0(hoe, " The simulation adds the asset's historic volatility (", pct(x$hist$vol), ") around that trend. ",
              "P10 means 1 in 10 paths ends lower. Chance of a loss = share of paths that end below what we put in."),
       paste0("The outlook is only as good as the ",
              switch(x$cfg$type, aandelen = "growth and P/E", obligaties = "yield and rate changes", "returns"),
@@ -873,7 +874,7 @@ server <- function(input, output, session) {
     x <- res()
     req(x)
     uitleg(
-      paste0("How much ", eur(x$cfg$positie), " can lose on one bad day. Bars: the fund's daily results in the past. ",
+      paste0("How much ", eur(x$cfg$positie), " can lose on one bad day. Bars: the asset's daily results in the past. ",
              "Red lines: VaR and ES at 95% from the Student-t model."),
       "VaR 95% is the loss we exceed on about 1 day in 20. ES 95% is the average loss on those bad days, so it looks into the tail.",
       paste0("Markets crash more often than the normal distribution says. The Student-t here has ",
@@ -959,8 +960,8 @@ server <- function(input, output, session) {
     x <- res()
     req(x)
     uitleg(
-      paste0("Our club rules for this ETF, with the position you entered (", eur(x$cfg$positie), ") and at the 30% maximum."),
-      "Sector limits only count for sector funds. Look-through uses the fund's biggest holding to check the 20% issuer limit.",
+      paste0("Our club rules for this asset, with the position you entered (", eur(x$cfg$positie), ") and at the 30% maximum."),
+      "Sector limits don't count for diversified assets. For a fund, look-through uses its biggest holding to check the 20% issuer limit; a single stock counts in full.",
       "Look-through only uses the biggest holding. It doesn't see overlap with what we already own."
     )
   })
@@ -1056,7 +1057,7 @@ server <- function(input, output, session) {
     y <- tryCatch(yaml::read_yaml(input$upload$datapath, eval.expr = FALSE), error = function(e) NULL)
     if (!is.list(y) || !is.list(y$etfs) || !length(y$etfs) || !all(vapply(y$etfs, is.list, logical(1)))) {
       geladen(NULL)
-      showNotification("This is not a config file from the ETF engine.", type = "error")
+      showNotification("This is not a config file from the Analyser.", type = "error")
       return()
     }
     y$etfs <- head(y$etfs, 50)
@@ -1069,8 +1070,8 @@ server <- function(input, output, session) {
     req(y, length(y$etfs) > 1)
     namen <- vapply(y$etfs, function(e) toupper(schoon(e$ticker, 15)), character(1))
     namen[!nzchar(namen)] <- "(no ticker)"
-    tagList(selectInput("kies_etf", "This file has several ETFs. Which one?", setNames(seq_along(namen), namen)),
-            actionButton("kies_ok", "Load this ETF", class = "btn-outline-light btn-sm w-100 mb-2"))
+    tagList(selectInput("kies_etf", "This file has several assets. Which one?", setNames(seq_along(namen), namen)),
+            actionButton("kies_ok", "Load this asset", class = "btn-outline-light btn-sm w-100 mb-2"))
   })
   
   observeEvent(input$kies_ok, {
