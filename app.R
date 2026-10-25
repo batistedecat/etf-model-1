@@ -71,6 +71,10 @@ body { -webkit-font-smoothing: antialiased; }
 .lg-mermaid[data-processed] { white-space: normal; text-align: center; }
 .lg-mermaid svg { max-width: 100% !important; height: auto; }
 .lg-legende { color: #8C8C94; font-size: .85rem; margin-top: .8rem; }
+.lg-repo { display: inline-flex; align-items: center; gap: .6rem; margin-top: 1.6rem; padding: .7rem 1.1rem;
+  border: 1px solid #25252A; border-radius: 999px; color: #ECECEE !important; text-decoration: none; font-weight: 500; }
+.lg-repo:hover { border-color: #44444B; background: #151518; }
+.lg-repo-pad { color: #8C8C94; font-size: .85rem; font-weight: 400; }
 
 .lg-wiskunde { max-width: 1060px; margin: 0 auto; padding: 2.5rem 1.5rem 3.5rem; }
 .lg-route { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: stretch; gap: .75rem; margin: 1.5rem 0 2rem; }
@@ -391,6 +395,8 @@ plot_dag <- function(r, positie, var95, es95) {
 
 # ---- uitlegpagina: flowchart en video uit README.md ----
 
+repo_url <- "https://github.com/batistedecat/etf-model-1"
+
 readme <- if (file.exists("README.md")) readLines("README.md", warn = FALSE, encoding = "UTF-8") else character()
 
 mermaid_code <- local({
@@ -440,7 +446,7 @@ uitleg_pagina <- div(
   },
   if (!is.null(video_bron) && !identical(video_bron, "uitleg.mp4")) {
     p(class = "lg-klein", "Video not playing?",
-      tags$a(href = "https://github.com/batistedecat/etf-model-1#readme", target = "_blank", rel = "noopener",
+      tags$a(href = paste0(repo_url, "#readme"), target = "_blank", rel = "noopener",
              "Watch it on GitHub ↗"))
   },
   h3(class = "lg-kop", "The flow"),
@@ -450,7 +456,9 @@ uitleg_pagina <- div(
     div(class = "lg-flow", tags$pre(class = "lg-mermaid", mermaid_code))
   },
   p(class = "lg-legende",
-    "px = prices · r = daily log-returns · vol = volatility. Every step lives in its own file in R/, and rapport.Rmd turns the result into the PDF.")
+    "px = prices · r = daily log-returns · vol = volatility. Every step lives in its own file in R/, and rapport.Rmd turns the result into the PDF."),
+  tags$a(class = "lg-repo", href = repo_url, target = "_blank", rel = "noopener",
+         icon("github"), span("Read the code on GitHub"), span(class = "lg-repo-pad", "batistedecat/etf-model-1 ↗"))
 )
 
 
@@ -702,6 +710,7 @@ ui <- page_navbar(
   nav_panel("How it works", value = "uitleg", uitleg_pagina),
   nav_panel("The math", value = "wiskunde", wiskunde_pagina),
   nav_spacer(),
+  nav_item(tags$a(class = "lg-link", href = repo_url, target = "_blank", rel = "noopener", icon("github"), " GitHub ↗")),
   nav_item(tags$a(class = "lg-link", href = "https://legradient.be", target = "_blank", rel = "noopener", "legradient.be ↗"))
 )
 
