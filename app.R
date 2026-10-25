@@ -788,7 +788,7 @@ server <- function(input, output, session) {
     sp <- x$split
     if (!sp$ok) return(div(class = "lg-zin", paste0("No backtest: ", sp$reden, ".")))
     bt <- x$bt
-    ok <- sum(bt$p_kupiec > 0.05 & bt$p_indep > 0.05)
+    ok <- sum(bt$p_kupiec >= 0.05)
     div(class = "lg-mini-rij",
         mini("Tested from", format(sp$start_test, "%b %Y"), paste(format(length(sp$test), big.mark = ","), "days")),
         mini("Models that hold", paste(ok, "of", nrow(bt))))
@@ -800,7 +800,7 @@ server <- function(input, output, session) {
     bt <- x$bt
     html_tabel(data.frame(Model = unname(modellen[bt$model]), Level = pct(bt$alpha, 0), `Days over VaR` = as.integer(bt$x),
                           Expected = formatC(bt$verwacht, format = "f", digits = 0),
-                          Verdict = ifelse(bt$p_kupiec > 0.05 & bt$p_indep > 0.05, "✓ holds", "✗ rejected"),
+                          Verdict = ifelse(bt$p_kupiec >= 0.05, "✓ holds", "✗ rejected"),
                           check.names = FALSE))
   })
   
@@ -809,8 +809,8 @@ server <- function(input, output, session) {
     req(x)
     uitleg(
       "We fitted each risk model on older data and checked it on recent days it had never seen.",
-      "A model holds when the number of days the loss went past its VaR is close to what it promised, and those days don't come in clusters (Kupiec and independence tests, p > 0.05).",
-      "A rejected model doesn't mean the fund is risky. It means that model measures its risk badly."
+      "A model holds when the number of days the loss went past its VaR is close to what it promised (Kupiec count test, p ≥ 0.05).",
+      "The verdict only counts the bad days. It ignores whether they come in clusters, which they often do: the model uses one fixed volatility, so it can't raise its guard when markets get nervous."
     )
   })
   
