@@ -505,7 +505,7 @@ wiskunde_pagina <- div(
       div(class = "lg-kicker", "01 · Return forecast"),
       h3(class = "lg-model-titel", "Grinold–Kroner"),
       p(class = "lg-model-vraag", "Where does a stock's return come from? Profits, mood and cash."),
-      p(class = "lg-wie", "Richard Grinold & Kenneth Kroner (2002), building on John Bogle's simpler dividend-plus-growth model."),
+      p(class = "lg-wie", "Richard Grinold & Kenneth Kroner (2002), building on John Bogle's (1991) dividend + growth + P/E model and adding a term for new shares and buybacks."),
       formule(r"-(\mathbb{E}[R] \approx \underbrace{\tfrac{D}{P}}_{\text{dividend}} + \underbrace{(i + g)}_{\text{earnings growth}} - \underbrace{\Delta S}_{\text{new shares}} + \underbrace{\Delta \tfrac{P}{E}}_{\text{repricing}})-"),
       formule(r"-(\mathbb{E}[R] = (1+g)\left(\frac{PE_H}{PE_0}\right)^{1/H} + y_D - \text{TER} - 1 \qquad\quad g^{*} = \frac{1 + R^{*} - y_D + \text{TER}}{\left(PE_H/PE_0\right)^{1/H}} - 1)-"),
       HTML(r"-(<p class="lg-waar">Top: the original. Bottom: our version, with break-even growth \(g^{*}\) on the right. \(g\) = yearly profit growth, \(PE_0\) = P/E today, \(PE_H\) = P/E after \(H\) years, \(y_D\) = dividend yield, TER = yearly fund cost, \(R^{*}\) = target return (8%).</p>)-"),
@@ -522,7 +522,7 @@ wiskunde_pagina <- div(
       div(class = "lg-kicker", "02 · Price model"),
       h3(class = "lg-model-titel", "Geometric Brownian motion"),
       p(class = "lg-model-vraag", "A steady climb plus random percentage shocks."),
-      p(class = "lg-wie", "Louis Bachelier (1900) first modelled prices as random; M.F.M. Osborne (1959) switched to log-prices; Black & Scholes (1973) made it the standard."),
+      p(class = "lg-wie", "Louis Bachelier (1900) first modelled prices as random; M.F.M. Osborne (1959) switched to log-prices; Paul Samuelson (1965) used it to price warrants; Black & Scholes (1973) made it the standard."),
       formule(r"-(dS_t = \mu\, S_t\, dt + \sigma\, S_t\, dW_t)-"),
       formule(r"-(S_{t+\Delta t} = S_t \exp\!\Big(\big(\mu - \tfrac{1}{2}\sigma^2\big)\Delta t + \sigma\sqrt{\Delta t}\, Z\Big), \quad Z \sim \mathcal{N}(0,1) \qquad\quad \mathbb{E}[S_T] = S_0\, e^{\mu T}, \quad \text{median}(S_T) = S_0\, e^{(\mu - \sigma^2/2)\,T})-"),
       HTML(r"-(<p class="lg-waar">\(S_t\) = price, \(\mu\) = drift (the trend), \(\sigma\) = volatility, \(W_t\) = Brownian motion (pure randomness), \(Z\) = a random draw from the normal distribution, \(\Delta t\) = step size in years.</p>)-"),
@@ -531,7 +531,7 @@ wiskunde_pagina <- div(
         r"-(<p>\(\mu = \ln(1 + \mathbb{E}[R])\) for each scenario, so the average path grows exactly at the Grinold–Kroner forecast. \(\sigma\) is the asset's historic volatility: the yearly standard deviation of its daily log-returns. We move in weekly steps (\(\Delta t = 1/52\)).</p>)-"),
       plotOutput("p_gbm_demo", height = 260),
       grenzen("Constant volatility: no calm vs. stormy periods", "Normal shocks: real crashes are more frequent", "No jumps or overnight gaps", "Drift fixed per scenario"),
-      lees(bron("Sigman (2012), Geometric Brownian motion: lecture notes (free PDF, Columbia)", "https://columbia.edu/~ks20/4404-16-Fall/Notes-GBM.pdf"),
+      lees(bron("Sigman (2012), Geometric Brownian motion: lecture notes (free PDF, Columbia; his μ is our μ − σ²/2)", "https://columbia.edu/~ks20/4404-16-Fall/Notes-GBM.pdf"),
            bron("Bachelier (1900), Théorie de la spéculation: the original, in French (Numdam)", "https://www.numdam.org/item/ASENS_1900_3_17__21_0/"),
            bron("Geometric Brownian motion (Wikipedia)", "https://en.wikipedia.org/wiki/Geometric_Brownian_motion"))),
   
@@ -548,7 +548,7 @@ wiskunde_pagina <- div(
       plotOutput("p_mc_demo", height = 240),
       grenzen("Only as good as the model it runs", "Removes counting noise, not model error", "Bad inputs in, bad odds out"),
       lees(bron("Metropolis (1987), The Beginning of the Monte Carlo Method (free PDF, Los Alamos)", "https://mcnpx.lanl.gov/pdf_files/Article_1987_LAS_Metropolis_125--130.pdf"),
-           bron("Owen, Monte Carlo theory, methods and examples (free online book)", "https://artowen.su.domains/mc/"))),
+           bron("Owen, Monte Carlo theory, methods and examples, ch. 1–2: estimating a probability and its standard error (free PDF)", "https://artowen.su.domains/mc/Ch-intro.pdf"))),
   
   h3(class = "lg-kop", "Also under the hood"),
   div(class = "lg-onder",
@@ -556,17 +556,21 @@ wiskunde_pagina <- div(
           h4("Student-t VaR & ES"),
           formule(r"-(\begin{aligned} \text{VaR}_\alpha &= m + s\,q \\ \text{ES}_\alpha &= m + s\,\frac{f_\nu(q)}{1-\alpha}\cdot\frac{\nu + q^2}{\nu - 1} \end{aligned})-"),
           HTML(r"-(<p>With \(q = t_\nu^{-1}(\alpha)\). The worst loss on 1 day in 20, and the average loss on those days, from a bell-curve with fat tails. A low \(\nu\) means fatter tails.</p>)-"),
-          lees(bron("Acerbi & Tasche (2002), arXiv", "https://arxiv.org/abs/cond-mat/0104295"))),
+          lees(bron("Norton, Khokhlov & Uryasev (2019), the Student-t formula: Prop. 12 (arXiv)", "https://arxiv.org/abs/1811.11301"),
+               bron("Acerbi & Tasche (2002), On the coherence of Expected Shortfall (arXiv)", "https://arxiv.org/abs/cond-mat/0104295"))),
       div(class = "lg-mini-kaart",
           h4("Kupiec backtest"),
           formule(r"-(\begin{aligned} LR &= -2\ln\!\big[(1-p)^{n-x}p^{x}\big] \\ &\quad + 2\ln\!\big[(1-\hat p)^{n-x}\hat p^{\,x}\big] \sim \chi^2_1 \end{aligned})-"),
           HTML(r"-(<p>With \(\hat p = x/n\). Did the loss go past VaR about as often as promised? \(x\) = days over VaR, \(n\) = test days, \(p = 1 - \alpha\). We skip the clustering test on purpose: real returns come in calm and stormy spells, so it would fail anyway.</p>)-"),
-          lees(bron("Kupiec (1995), Fed working paper", "https://fedinprint.org/item/fedgfe/34596/original"))),
+          lees(bron("Kupiec (1995), Fed working paper", "https://fedinprint.org/item/fedgfe/34596/original"),
+               bron("Christoffersen (1998), the clustering test we leave out (JSTOR)", "https://doi.org/10.2307/2527341"))),
       div(class = "lg-mini-kaart",
           h4("Bond return (duration)"),
           formule(r"-(\mathbb{E}[R] \approx y - \text{TER} + \Delta y\,\frac{H - D}{H})-"),
           HTML(r"-(<p>A rate rise \(\Delta y\) hurts the price now, through the duration \(D\). But you reinvest at the higher yield for \(H\) years. If \(H = D\), the two cancel out.</p>)-"),
-          lees(bron("Immunization: the idea behind it (Wikipedia)", "https://en.wikipedia.org/wiki/Immunization_(finance)"))))
+          lees(bron("Fisher & Weil (1971), the original H = D result (JSTOR)", "https://doi.org/10.1086/295402"),
+               bron("Leibowitz, Bova & Kogelman (2014), bond funds when rates move gradually: about 2D − 1 years (abstract)", "https://ideas.repec.org/a/taf/ufajxx/v70y2014i1p31-51.html"),
+               bron("Immunization: the idea behind it (Wikipedia)", "https://en.wikipedia.org/wiki/Immunization_(finance)"))))
 )
 
 
