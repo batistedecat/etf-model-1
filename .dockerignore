@@ -1,0 +1,12 @@
+.git
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+renv/library
+renv/staging
+renv/local
+data
+out
+*.pdf
+tests
