@@ -6,6 +6,10 @@ https://github.com/user-attachments/assets/715bba99-5dc2-4c91-b8e5-4cee5fa53e5c
 Feed it an ETF. Get back a full risk report as a PDF.
 Built in R for [Le Gradient](https://legradient.be), the student investment club in Ghent.
 
+#cool user-interface
+
+check out the online version at [online version](https://legradient-analyser.cloud.run)
+
 ## Why we made this
 
 At Le Gradient we pitch ETFs / stocks and vote on them together.
